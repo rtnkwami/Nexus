@@ -1,11 +1,10 @@
 import express from 'express';
+import shopRoutes from './routes/shop.routes.js';
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/', (req, res) => {
-    res.send('Hello, World!');
-});
+app.use('/shops', shopRoutes);
 
 export default app;
