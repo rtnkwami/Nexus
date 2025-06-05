@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../config/dbConfig.js';
 
-const Shop = sequelize.define('shop', 
+const Shop = sequelize.define('Shop', 
     {
         name: {
             type: DataTypes.STRING,
@@ -11,6 +11,9 @@ const Shop = sequelize.define('shop',
             type: DataTypes.TEXT,
             allowNull: true
         }
+    },
+    {
+        tableName: 'Shops'
     }
 );
 
