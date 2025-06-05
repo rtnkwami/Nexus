@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../config/dbConfig.js';
 
-const Shops = sequelize.define('shops', 
+const Shop = sequelize.define('shop', 
     {
         name: {
             type: DataTypes.STRING,
@@ -14,4 +14,4 @@ const Shops = sequelize.define('shops',
     }
 );
 
-export default Shops;
+export default Shop;

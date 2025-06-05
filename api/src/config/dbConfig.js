@@ -9,7 +9,7 @@ export const testDbConnection = async () => {
         await sequelize.authenticate();
         console.log('Connection has been established successfully.');
 
-        await sequelize.sync();
+        await sequelize.sync({ force: true });
         console.log('All models synced.')
 
     } catch (error) {
