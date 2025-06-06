@@ -4,8 +4,8 @@ import { sequelize } from "../config/dbConfig.js";
 
 
 
-Shop.belongsToMany(User, { through: 'ShopUser'});
-User.belongsToMany(Shop, { through: 'ShopUser' })
+User.hasOne(Shop);
+Shop.belongsTo(User);
 
 
 export {
