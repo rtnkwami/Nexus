@@ -1,0 +1,35 @@
+import { DataTypes } from 'sequelize';
+import { sequelize } from '../config/dbConfig.js';
+
+const Product = sequelize.define('Product', 
+    {
+        id: {
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
+            primaryKey: true
+        },
+        name: {
+            type: DataTypes.STRING,
+            required: true,
+            allowNull: false,
+        },
+        description: {
+            type: DataTypes.TEXT,
+            allowNull: true
+        },
+        price: {
+            type: DataTypes.DECIMAL(10, 2),
+            allowNull: false,
+            required: true
+        },
+        stock: {
+            type: DataTypes.INTEGER,
+            allowNull: false
+        }
+    },
+    {
+        tableName: 'Products'
+    }
+);
+
+export default Product;
