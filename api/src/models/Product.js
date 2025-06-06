@@ -24,7 +24,8 @@ const Product = sequelize.define('Product',
         },
         stock: {
             type: DataTypes.INTEGER,
-            allowNull: false
+            allowNull: false,
+            defaultValue: 0
         }
     },
     {
