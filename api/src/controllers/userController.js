@@ -33,5 +33,6 @@ export const getUserMetadata = async (req, res) => {
         );
     } catch (error) {
         console.error(`Error getting or creating user: ${error}`);
+        return res.status(500).json({ message: "Internal server error" })
     }
 }

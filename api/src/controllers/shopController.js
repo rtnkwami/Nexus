@@ -31,6 +31,6 @@ export const updateShopMetadata =  async (req, res) => {
 
     } catch (error) {
         console.error('Error creating shop: ', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        return res.status(500).json({ error: 'Internal Server Error' });
     }
 }
