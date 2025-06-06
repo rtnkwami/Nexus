@@ -6,12 +6,6 @@ const User = sequelize.define('User',
         auth0_uid: {
             type: DataTypes.STRING,
             unique: true,
-        },
-        name: {
-            type: DataTypes.STRING
-        },
-        email: {
-            type: DataTypes.STRING
         }
     },
     {
