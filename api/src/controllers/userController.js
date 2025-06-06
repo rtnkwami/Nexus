@@ -16,7 +16,16 @@ export const getUser = async (req, res) => {
             defaults: { name: `${user.name}'s Shop` }
         });
 
-        res.status(200).json({ message: "User created or present" });
+        const shop = await Shop.findOne({ where: { UserId: user.id } })
+        res.status(200).json(
+            {
+                user: { username: user.name },
+                userShop: { 
+                    name: shop.name,
+                    description: shop.description
+                }
+            }
+        );
     } catch (error) {
         console.error(`Error getting or creating user: ${error}`);
     }
