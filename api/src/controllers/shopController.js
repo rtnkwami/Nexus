@@ -1,13 +1,33 @@
 import Shop from "../models/Shop.js";
+import User from "../models/User.js";
 
-export const createShop =  async (req, res) => {
-    
-    const { name, description } = req.body;
+export const updateShop =  async (req, res) => {
+    const { id, name, description } = req.body;
 
     try {
-        const testShop = await Shop.create({ name, description });
-        res.status(201).json(testShop);
-        console.log(testShop.name);
+        const shop = await Shop.findByPk(id);
+        await shop.update(
+            {
+                name: name,
+                description: description
+            },
+            {
+                where: {
+                    id: id
+                }
+            }
+        );
+
+        res.status(201).json(
+            {
+                userShop: {
+                    id: shop.id,
+                    name: shop.name,
+                    description: shop.description
+                }
+            }
+        );
+        console.log(shop);
 
     } catch (error) {
         console.error('Error creating shop: ', error);

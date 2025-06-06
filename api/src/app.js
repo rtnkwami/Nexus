@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config()
 import express from 'express';
 import userRoutes from './routes/user.routes.js';
+import shopRoutes from './routes/shops.routes.js'
 const app = express();
 import checkJwt from './utils/verifyJwt.js';
 import cors from 'cors';
@@ -13,6 +14,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/users', userRoutes);
+app.use('/shops', shopRoutes);
 
 app.get('/', checkJwt, (req, res) => {
     res.status(200).json({ message: "Correctly authenticated app!" });
