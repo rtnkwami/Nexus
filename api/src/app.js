@@ -3,14 +3,8 @@ dotenv.config()
 import express from 'express';
 import userRoutes from './routes/user.routes.js';
 const app = express();
-import { auth } from 'express-oauth2-jwt-bearer';
+import checkJwt from './utils/verifyJwt.js';
 import cors from 'cors';
-
-const checkJwt = auth({
-  audience: process.env.AUTH0_AUDIENCE,
-  issuerBaseURL: process.env.AUTH0_ISSUER,
-  tokenSigningAlg: process.env.AUTH0_SIGINING_ALGORITHM
-});
 
 app.use(cors({
     origin: 'http://localhost:3000'
