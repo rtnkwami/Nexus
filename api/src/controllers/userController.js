@@ -1,7 +1,7 @@
 import User from '../models/User.js';
 import Shop from '../models/Shop.js';
 
-export const getUser = async (req, res) => {
+export const getUserMetadata = async (req, res) => {
     const { sub, name } = req.body;
 
     try {

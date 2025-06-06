@@ -1,9 +1,9 @@
 import express from 'express';
-import { getUser } from '../controllers/userController.js';
+import { getUserMetadata } from '../controllers/userController.js';
 import checkJwt from '../utils/verifyJwt.js';
 
 const router = express.Router();
 
-router.post('/', checkJwt, getUser);
+router.post('/', checkJwt, getUserMetadata);
 
 export default router;
