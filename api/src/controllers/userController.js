@@ -2,12 +2,12 @@ import User from '../models/User.js';
 import Shop from '../models/Shop.js';
 
 export const getUserMetadata = async (req, res) => {
-    const { sub, name } = req.body;
+    const { sub, userName } = req.body;
 
     try {
         await User.findOrCreate({
-            where: { auth0_uid: sub, name: name },
-            defaults: { auth0_uid: sub, name: name}
+            where: { auth0_uid: sub, name: userName },
+            defaults: { auth0_uid: sub, name: userName}
         });
 
         const user = await User.findOne({ where: { auth0_uid: sub } });

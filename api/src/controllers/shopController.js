@@ -2,18 +2,18 @@ import Shop from "../models/Shop.js";
 import User from "../models/User.js";
 
 export const updateShopMetadata =  async (req, res) => {
-    const { id, name, description } = req.body;
+    const { shopId, shopName, shopDescription } = req.body;
 
     try {
-        const shop = await Shop.findByPk(id);
+        const shop = await Shop.findByPk(shopId);
         await shop.update(
             {
-                name: name,
-                description: description
+                name: shopName,
+                description: shopDescription
             },
             {
                 where: {
-                    id: id
+                    id: shopId
                 }
             }
         );
