@@ -6,7 +6,13 @@ const User = sequelize.define('User',
         auth0_uid: {
             type: DataTypes.STRING,
             unique: true,
-        }
+            allowNull: false,
+            required: true,
+        },
+        name: {
+            type: DataTypes.STRING,
+            unique: true,
+        },
     },
     {
         tableName: 'Users'
