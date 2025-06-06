@@ -19,8 +19,12 @@ export const getUser = async (req, res) => {
         const shop = await Shop.findOne({ where: { UserId: user.id } })
         res.status(200).json(
             {
-                user: { username: user.name },
+                user: { 
+                    id: user.id,
+                    username: user.name
+                },
                 userShop: { 
+                    id: shop.id,
                     name: shop.name,
                     description: shop.description
                 }
