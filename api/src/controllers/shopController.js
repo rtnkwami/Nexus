@@ -1,6 +1,7 @@
 import Shop from "../models/Shop.js";
 import Product from "../models/Product.js";
 import { removeUndefined } from "../utils/cleanInputs.js";
+import { Op } from "sequelize";
 
 export const updateShopMetadata =  async (req, res) => {
     const { name, description } = req.body.shop;
@@ -66,16 +67,26 @@ export const createShopProduct = async (req, res) => {
 };
 
 export const getShopProducts = async (req, res) => {    
-    const page = parseInt(req.params.page) || 1;
-    const limit = parseInt(req.params.limit) || 30;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 30;
     const  offset = (page - 1) * limit;
 
     try {
 
         const { id } = req.params;
+        const { category, minPrice, maxPrice, search } = req.query;
+        const productQuery = { ShopId: id }
+
+        const min = Number(minPrice);
+        const max = Number(maxPrice);
+
+        if (category) { productQuery.category = category }
+        if (minPrice && maxPrice) { productQuery.price = { [Op.between]: [min, max] } }
+        if (search) { productQuery.name = { [Op.like]: `%${ search }%` } }
+
 
         const { count, rows } = await Product.findAndCountAll({ 
-            where: { ShopId: id },
+            where: productQuery,
             offset,
             limit
         });
