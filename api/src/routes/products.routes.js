@@ -1,11 +1,9 @@
 import express from 'express';
 import checkJwt from '../utils/verifyJwt.js';
-import { createProduct, updateProduct } from '../controllers/productController.js';
+import { getPaginatedProducts } from '../controllers/productController.js';
 
 const router = express.Router();
 
-router.post('/', checkJwt, createProduct);
-
-router.put('/:id', updateProduct);
+router.get('/', getPaginatedProducts)
 
 export default router;
