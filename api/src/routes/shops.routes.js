@@ -4,6 +4,6 @@ import checkJwt from '../utils/verifyJwt.js';
 
 const router = express.Router();
 
-router.put('/', checkJwt, updateShopMetadata);
+router.put('/:id', checkJwt, updateShopMetadata);
 
 export default router;

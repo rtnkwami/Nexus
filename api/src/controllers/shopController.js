@@ -2,7 +2,8 @@ import Shop from "../models/Shop.js";
 import { removeUndefined } from "../utils/cleanInputs.js";
 
 export const updateShopMetadata =  async (req, res) => {
-    const { id, name, description } = req.body.shop;
+    const { name, description } = req.body.shop;
+    const { id } = req.params;
 
     const shopUpdate = removeUndefined({ name, description });
 
