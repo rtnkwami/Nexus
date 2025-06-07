@@ -3,7 +3,6 @@ import Shop from '../models/Shop.js';
 
 export const getUserMetadata = async (req, res) => {
     const { sub, name } = req.body.user;
-    console.log(req.headers);
 
     try {
         await User.findOrCreate({
