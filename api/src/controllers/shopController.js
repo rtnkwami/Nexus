@@ -31,7 +31,7 @@ export const updateShopMetadata =  async (req, res) => {
 };
 
 export const createShopProduct = async (req, res) => {
-    const { name, description, price, stock } = req.body.product;
+    const { name, description, price, stock, category } = req.body.product;
     const { id } = req.params;
 
     try {
@@ -42,8 +42,9 @@ export const createShopProduct = async (req, res) => {
                 name: name,
                 description: description,
                 price: price,
+                category: category,
                 stock: stock,
-                ShopId: shopId
+                ShopId: id
             });
 
             if (product) {
@@ -52,6 +53,7 @@ export const createShopProduct = async (req, res) => {
                         id: product.id,
                         name: product.name,
                         description: product.description,
+                        category: category,
                         price: product.price,
                         stock: product.stock
                     }
@@ -109,12 +111,13 @@ export const getShopProducts = async (req, res) => {
 };
 
 export const updateShopProduct = async (req, res) => {
-    const { name, description, price, stock } = req.body.product;
+    const { name, description, category, price, stock } = req.body.product;
     const { id } = req.params;
 
     const productUpdate = removeUndefined({ 
         name,
         description,
+        category,
         price,
         stock
      });
@@ -130,6 +133,7 @@ export const updateShopProduct = async (req, res) => {
                     id: product.id,
                     name: product.name,
                     description: product.description,
+                    category: product.category,
                     price: product.price,
                     stock: product.stock
                 }
