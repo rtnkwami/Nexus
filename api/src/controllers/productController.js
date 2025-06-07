@@ -1,5 +1,6 @@
 import Product from "../models/Product.js";
 import Shop  from "../models/Shop.js";
+import { removeUndefined } from "../utils/cleanInputs.js";
 
 export const createProduct = async (req, res) => {
     const { shopId, name, description, price, stock } = req.body.product;
@@ -35,3 +36,37 @@ export const createProduct = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" })
     }
 };
+
+export const updateProduct = async (req, res) => {
+    const { name, description, price, stock } = req.body.product;
+    const { id } = req.params;
+
+    const productUpdate = removeUndefined({ 
+        name,
+        description,
+        price,
+        stock
+     });
+
+    try {
+        const product = await Product.findByPk(id);
+
+        if (product) {
+            await product.update(productUpdate);
+
+            res.status(201).json({
+                product: {
+                    id: product.id,
+                    name: product.name,
+                    description: product.description,
+                    price: product.price,
+                    stock: product.stock
+                }
+            });
+        }
+
+    } catch (error) {
+        console.error("Error updating product: ", error);
+        return res.status(500).json({ message: "Internal server error" })
+    }
+}
