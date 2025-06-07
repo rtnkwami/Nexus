@@ -24,6 +24,10 @@ const Product = sequelize.define('Product',
         },
         price: {
             type: DataTypes.DECIMAL(10, 2),
+            get() {
+                const rawValue = this.getDataValue('price');
+                return rawValue === null ? null : Number(rawValue);
+            },
             allowNull: false,
             required: true
         },
