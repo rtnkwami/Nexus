@@ -1,4 +1,5 @@
 import Shop from "../models/Shop.js";
+import Product from "../models/Product.js";
 import { removeUndefined } from "../utils/cleanInputs.js";
 
 export const updateShopMetadata =  async (req, res) => {
@@ -26,7 +27,7 @@ export const updateShopMetadata =  async (req, res) => {
         console.error('Error creating shop: ', error);
         return res.status(500).json({ error: 'Internal Server Error' });
     }
-}
+};
 
 export const createShopProduct = async (req, res) => {
     const { name, description, price, stock } = req.body.product;
@@ -61,6 +62,38 @@ export const createShopProduct = async (req, res) => {
     } catch(error) {
         console.error("Error creating product: ", error);
         return res.status(500).json({ message: "Internal server error" })
+    }
+};
+
+export const getShopProducts = async (req, res) => {    
+    const page = parseInt(req.params.page) || 1;
+    const limit = parseInt(req.params.limit) || 30;
+    const  offset = (page - 1) * limit;
+
+    try {
+
+        const { id } = req.params;
+
+        const { count, rows } = Product.findAndCountAll({ 
+            where: { ShopId: id },
+            offset,
+            limit
+        });
+
+        res.json({
+            products: rows,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(count / limit),
+                totalProducts: count,
+                hasNextPage: page < Math.ceil(count / limit),
+                hasPreviousPage: page > 1
+            }
+        })
+
+    } catch (error) {
+        console.error("Error getting shop products: ", error);
+        res.status(500).json({ message: "Internal server error" });
     }
 };
 

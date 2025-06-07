@@ -1,8 +1,10 @@
 import express from 'express';
-import { updateShopMetadata, createShopProduct, updateShopProduct } from '../controllers/shopController.js';
+import { updateShopMetadata, createShopProduct, updateShopProduct, getShopProducts } from '../controllers/shopController.js';
 import checkJwt from '../utils/verifyJwt.js';
 
 const router = express.Router();
+
+router.get('/:id/products', checkJwt, getShopProducts)
 
 router.post('/:id/products', checkJwt, createShopProduct);
 
