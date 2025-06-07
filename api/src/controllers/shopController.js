@@ -74,13 +74,13 @@ export const getShopProducts = async (req, res) => {
 
         const { id } = req.params;
 
-        const { count, rows } = Product.findAndCountAll({ 
+        const { count, rows } = await Product.findAndCountAll({ 
             where: { ShopId: id },
             offset,
             limit
         });
 
-        res.json({
+        res.status(200).json({
             products: rows,
             pagination: {
                 currentPage: page,
