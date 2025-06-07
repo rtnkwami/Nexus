@@ -1,6 +1,12 @@
 import dotenv from 'dotenv';
-dotenv.config();
+import path from 'path';
 import { auth } from 'express-oauth2-jwt-bearer';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const checkJwt = auth({
   audience: process.env.AUTH0_AUDIENCE,
