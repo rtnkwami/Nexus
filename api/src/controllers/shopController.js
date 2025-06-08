@@ -2,10 +2,11 @@ import Shop from "../models/Shop.js";
 import Product from "../models/Product.js";
 import { removeUndefined } from "../utils/cleanInputs.js";
 import { Op } from "sequelize";
+import { getUserShopId } from "../utils/getUserShop.js";
 
 export const updateShopMetadata =  async (req, res) => {
     const { name, description } = req.body.shop;
-    const { shopId } = req.params;
+    const shopId = await getUserShopId(req);
 
     const shopUpdate = removeUndefined({ name, description });
 
@@ -32,7 +33,7 @@ export const updateShopMetadata =  async (req, res) => {
 
 export const createShopProduct = async (req, res) => {
     const { name, description, price, stock, category } = req.body.product;
-    const { shopId } = req.params;
+    const shopId = await getUserShopId(req);
 
     try {
         const shop = await Shop.findByPk(shopId);
@@ -75,7 +76,7 @@ export const getShopProducts = async (req, res) => {
 
     try {
 
-        const { shopId } = req.params;
+        const shopId  = await getUserShopId(req);
         const { category, minPrice, maxPrice, search } = req.query;
         const productQuery = { ShopId: shopId }
 

@@ -11,16 +11,16 @@ import checkJwt from '../utils/verifyJwt.js';
 
 const router = express.Router();
 
-router.get('/:shopId/products', checkJwt, getShopProducts);
+router.get('/products', checkJwt, getShopProducts);
 
-router.get('/:shopId/products/:productId', checkJwt, getOneShopProduct);
+router.get('/products/:productId', checkJwt, getOneShopProduct);
 
-router.post('/:shopId/products', checkJwt, createShopProduct);
+router.post('/products', checkJwt, createShopProduct);
 
-router.put('/:shopId/products/:productId', checkJwt, updateShopProduct);
+router.put('/products/:productId', checkJwt, updateShopProduct);
 
-router.delete('/:shopId/products/:productId', deleteShopProduct);
+router.delete('/products/:productId', checkJwt, deleteShopProduct);
 
-router.put('/:shopId', checkJwt, updateShopMetadata);
+router.put('/', checkJwt, updateShopMetadata);
 
 export default router;
