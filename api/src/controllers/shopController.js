@@ -5,12 +5,12 @@ import { Op } from "sequelize";
 
 export const updateShopMetadata =  async (req, res) => {
     const { name, description } = req.body.shop;
-    const { id } = req.params;
+    const { shopId } = req.params;
 
     const shopUpdate = removeUndefined({ name, description });
 
     try {
-        const shop = await Shop.findByPk(id);
+        const shop = await Shop.findByPk(shopId);
         await shop.update(shopUpdate);
 
         res.status(201).json(
@@ -32,10 +32,10 @@ export const updateShopMetadata =  async (req, res) => {
 
 export const createShopProduct = async (req, res) => {
     const { name, description, price, stock, category } = req.body.product;
-    const { id } = req.params;
+    const { shopId } = req.params;
 
     try {
-        const shop = await Shop.findByPk(id);
+        const shop = await Shop.findByPk(shopId);
 
         if (shop) {
             const product = await Product.create({
@@ -75,9 +75,9 @@ export const getShopProducts = async (req, res) => {
 
     try {
 
-        const { id } = req.params;
+        const { shopId } = req.params;
         const { category, minPrice, maxPrice, search } = req.query;
-        const productQuery = { ShopId: id }
+        const productQuery = { ShopId: shopId }
 
         const min = Number(minPrice);
         const max = Number(maxPrice);
@@ -110,9 +110,24 @@ export const getShopProducts = async (req, res) => {
     }
 };
 
+export const getOneShopProduct = async (req, res) => {
+    const { productId } = req.params;
+
+    try {
+        const product = await Product.findByPk(productId);
+
+        if (product) { 
+            res.status(200).json({ product });
+        };
+    } catch (error) {
+        console.error(`Error getting product ${ id }: `, error);
+        res.status(500).json({ message: "Internal server error" })
+    }
+}
+
 export const updateShopProduct = async (req, res) => {
     const { name, description, category, price, stock } = req.body.product;
-    const { id } = req.params;
+    const { productId } = req.params;
 
     const productUpdate = removeUndefined({ 
         name,
@@ -123,21 +138,12 @@ export const updateShopProduct = async (req, res) => {
      });
 
     try {
-        const product = await Product.findByPk(id);
+        const product = await Product.findByPk(productId);
 
         if (product) {
             await product.update(productUpdate);
 
-            res.status(201).json({
-                product: {
-                    id: product.id,
-                    name: product.name,
-                    description: product.description,
-                    category: product.category,
-                    price: product.price,
-                    stock: product.stock
-                }
-            });
+            res.status(201).json({ product });
         }
 
     } catch (error) {

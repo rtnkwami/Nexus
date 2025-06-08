@@ -1,15 +1,23 @@
 import express from 'express';
-import { updateShopMetadata, createShopProduct, updateShopProduct, getShopProducts } from '../controllers/shopController.js';
+import { 
+    updateShopMetadata,
+    createShopProduct,
+    updateShopProduct,
+    getShopProducts,
+    getOneShopProduct
+} from '../controllers/shopController.js';
 import checkJwt from '../utils/verifyJwt.js';
 
 const router = express.Router();
 
-router.get('/:id/products', checkJwt, getShopProducts)
+router.get('/:shopId/products', checkJwt, getShopProducts);
 
-router.post('/:id/products', checkJwt, createShopProduct);
+router.get('/:shopId/products/:productId', checkJwt, getOneShopProduct);
 
-router.put('/:id/products/:id', checkJwt, updateShopProduct);
+router.post('/:shopId/products', checkJwt, createShopProduct);
 
-router.put('/:id', checkJwt, updateShopMetadata);
+router.put('/:shopId/products/:productId', checkJwt, updateShopProduct);
+
+router.put('/:shopId', checkJwt, updateShopMetadata);
 
 export default router;
