@@ -16,10 +16,18 @@ const UserProfile = () => {
         },
       });
 
-      const metadataResponse = await fetch('http://localhost:5000', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+      const metadataResponse = await fetch('http://localhost:5000/users', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            "user": {
+              "sub": user.sub,
+              "name": user.name
+            }
+          })
       });
 
       const serverResponse = await metadataResponse.json();
