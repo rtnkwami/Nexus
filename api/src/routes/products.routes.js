@@ -1,9 +1,8 @@
 import express from 'express';
-import checkJwt from '../utils/verifyJwt.js';
-import { getPaginatedProducts } from '../controllers/productController.js';
+import { getAllProducts } from '../controllers/productController.js';
 
 const router = express.Router();
 
-router.get('/', getPaginatedProducts)
+router.get('/', getAllProducts);
 
 export default router;
