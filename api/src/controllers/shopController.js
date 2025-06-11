@@ -45,7 +45,7 @@ export const createShopProduct = async (req, res) => {
                 price: price,
                 category: category,
                 stock: stock,
-                ShopId: id
+                ShopId: shopId
             });
 
             if (product) {
