@@ -31,6 +31,15 @@ export const addToCart = async (req, res) => {
     
 }
 
-export const updateCart = async (req, res) => {
-    
+export const getCart = async (req, res) => {
+    try {
+        if (!req.session.cart){
+            req.session.cart = [];
+        }
+        return res.status(200).json({ cart: req.session.cart });
+
+    } catch (error) {
+        console.error("Error getting cart: ", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
 }
