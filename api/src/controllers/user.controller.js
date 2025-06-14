@@ -1,8 +1,10 @@
 import User from '../models/User.js';
 import Shop from '../models/Shop.js';
+import session from 'express-session';
 
 export const getUserMetadata = async (req, res) => {
     const { sub, name } = req.body.user;
+    console.log(req.headers);
 
     try {
         await User.findOrCreate({
@@ -33,5 +35,15 @@ export const getUserMetadata = async (req, res) => {
     } catch (error) {
         console.error(`Error getting or creating user: ${error}`);
         return res.status(500).json({ message: "Internal server error" })
+    }
+}
+
+export const getUserCart = async (req, res) => {
+    if (!req.session.cart) { req.session.cart = [] };
+
+    try {
+        
+    } catch (error) {
+        
     }
 }

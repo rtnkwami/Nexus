@@ -6,7 +6,7 @@ import {
     getShopProducts,
     getOneShopProduct,
     deleteShopProduct
-} from '../controllers/shopController.js';
+} from '../controllers/shop.controller.js';
 import checkJwt from '../utils/verifyJwt.js';
 
 const router = express.Router();
