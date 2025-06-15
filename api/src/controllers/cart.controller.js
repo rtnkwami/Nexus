@@ -13,12 +13,13 @@ export const addToCart = async (req, res) => {
             return res.status(400).json({ message: "Invalid product id" });
         }
     
+        // Check if product is already in cart and increase by incoming qty or add to cart
         const existingProduct = req.session.cart.find(item => item.id === id);
         if (existingProduct) { 
             existingProduct.quantity += quantity;
     
         } else {
-            req.session.cart.push({ id, quantity })
+            req.session.cart.push({ id, quantity });
     
         }
     
@@ -36,7 +37,36 @@ export const getCart = async (req, res) => {
         if (!req.session.cart){
             req.session.cart = [];
         }
-        return res.status(200).json({ cart: req.session.cart });
+
+        const cart = req.session.cart;
+
+        const productIds = cart.map(item => item.id);
+        const products = await Product.findAll({
+        where: {
+            id: productIds
+        }
+        });
+
+        const productMap = Object.fromEntries(
+            products.map(product => [product.id, product])
+        );
+
+        let cartTotal = 0;
+
+        const cartWithDetails = cart.map(cartItem => {
+            const product = productMap[cartItem.id];
+            let totalProductPrice = Math.round((cartItem.quantity * product.price) * 100) / 100;
+            cartTotal += totalProductPrice;
+            return {
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                category: product.category,
+                quantity: cartItem.quantity
+            };
+        });
+
+        return res.status(200).json({ cart: cartWithDetails, cartTotal });
 
     } catch (error) {
         console.error("Error getting cart: ", error);
