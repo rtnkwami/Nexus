@@ -1,4 +1,7 @@
 import Product from "../models/Product.js";
+import User from "../models/User.js";
+import Order from "../models/Order.js";
+import { enrichCart } from "../utils/enrichCart.js";
 
 export const addToCart = async (req, res) => { 
     try {
@@ -38,33 +41,7 @@ export const getCart = async (req, res) => {
             req.session.cart = [];
         }
 
-        const cart = req.session.cart;
-
-        const productIds = cart.map(item => item.id);
-        const products = await Product.findAll({
-        where: {
-            id: productIds
-        }
-        });
-
-        const productMap = Object.fromEntries(
-            products.map(product => [product.id, product])
-        );
-
-        let cartTotal = 0;
-
-        const cartWithDetails = cart.map(cartItem => {
-            const product = productMap[cartItem.id];
-            let totalProductPrice = Math.round((cartItem.quantity * product.price) * 100) / 100;
-            cartTotal += totalProductPrice;
-            return {
-                id: product.id,
-                name: product.name,
-                price: product.price,
-                category: product.category,
-                quantity: cartItem.quantity
-            };
-        });
+        const { cartWithDetails, cartTotal } = await enrichCart(req.session.cart);
 
         return res.status(200).json({ cart: cartWithDetails, cartTotal });
 
@@ -93,6 +70,37 @@ export const removeFromCart = async (req, res) => {
 
     } catch (error) {
         console.error("Error removing product from cart: ", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export const placeOrder = async (req, res) => {
+    try { 
+        const { sub } = req.auth.payload;
+        const cart = req.session.cart || [];
+    
+        if (cart.length === 0) { return res.status(400).json({ message: "Cart cannot be empty" }) };
+    
+        const user = await User.findOne({ where: { auth0_uid: sub } });
+        const { cartWithDetails, cartTotal } = await enrichCart(cart);
+    
+        const order = await Order.create({
+            UserId: user.id,
+            details: cartWithDetails,
+            total: cartTotal,
+            status: 'pending'
+        });
+    
+        req.session.cart = [];
+    
+        return res.status(201).json({
+            success: true,
+            orderId: order.id,
+            message: 'Order created successfully'
+        });
+
+    } catch (error) {
+        console.error("Error creating order: ", error);
         return res.status(500).json({ message: "Internal server error" });
     }
 }
