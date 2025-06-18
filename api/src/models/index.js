@@ -12,6 +12,9 @@ Shop.belongsTo(User);
 Shop.hasMany(Product);
 Product.belongsTo(Shop);
 
+Shop.hasMany(Order);
+Order.belongsTo(Shop);
+
 User.hasMany(Order);
 Order.belongsTo(User);
 
