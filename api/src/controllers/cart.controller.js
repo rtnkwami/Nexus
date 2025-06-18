@@ -1,6 +1,7 @@
 import Product from "../models/Product.js";
 import User from "../models/User.js";
 import Order from "../models/Order.js";
+import Shop from "../models/Shop.js";
 import { enrichCart } from "../utils/enrichCart.js";
 
 export const addToCart = async (req, res) => { 
@@ -82,10 +83,12 @@ export const placeOrder = async (req, res) => {
         if (cart.length === 0) { return res.status(400).json({ message: "Cart cannot be empty" }) };
     
         const user = await User.findOne({ where: { auth0_uid: sub } });
+        const shop = await Shop.findOne({ where: { UserId: user.id } });
         const { cartWithDetails, cartTotal } = await enrichCart(cart);
     
         const order = await Order.create({
             UserId: user.id,
+            ShopId: shop.id,
             details: cartWithDetails,
             total: cartTotal,
             status: 'pending'

@@ -9,6 +9,4 @@ router.use(appSession);
 
 router.post('/', checkJwt, getUserMetadata);
 
-router.post('/carts', getUserCart);
-
 export default router;
