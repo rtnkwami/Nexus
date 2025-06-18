@@ -8,18 +8,18 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
-export const sequelize = new Sequelize('sqlite::memory', { logging: false }); // Dev database
+// export const sequelize = new Sequelize('sqlite::memory', { logging: false }); // Dev database
 
-// export const sequelize = new Sequelize(
-//     process.env.DB_NAME,
-//     process.env.DB_USER,
-//     process.env.DB_PASSWORD,
-//     {
-//         host: 'localhost',
-//         dialect: 'postgres',
-//         logging: false
-//     }
-// );
+export const sequelize = new Sequelize(
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASSWORD,
+    {
+        host: 'localhost',
+        dialect: 'postgres',
+        logging: false
+    }
+);
 
 export const testDbConnection = async () => {
     try {
