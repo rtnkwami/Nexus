@@ -86,14 +86,19 @@ export const placeOrder = async (req, res) => {
         const shop = await Shop.findOne({ where: { UserId: user.id } });
         const { cartWithDetails, cartTotal } = await enrichCart(cart);
     
-        const order = await Order.create({
-            UserId: user.id,
-            ShopId: shop.id,
-            details: cartWithDetails,
-            total: cartTotal,
-            status: 'pending'
-        });
+        const order = await Order.create({ UserId: user.id, ShopId: shop.id });
     
+        for (const item of cart) { 
+            const product = await Product.findByPk(item.id);
+
+            await order.addProduct(product, {
+                through: {
+                    quantity: item.quantity,
+                    priceAtTime: product.price
+                }
+            })
+        }
+
         req.session.cart = [];
     
         return res.status(201).json({
