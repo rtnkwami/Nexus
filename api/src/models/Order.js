@@ -8,14 +8,6 @@ const Order = sequelize.define('Order',
             defaultValue: DataTypes.UUIDV4,
             primaryKey: true
         },
-        details: {
-            type: DataTypes.JSONB,
-            allowNull: false
-        },
-        total: {
-            type: DataTypes.DECIMAL(10, 2),
-            allowNull: false
-        },
         status: {
             type: DataTypes.ENUM('pending', 'completed', 'cancelled'),
             defaultValue: 'pending'
