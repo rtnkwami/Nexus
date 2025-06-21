@@ -12,9 +12,8 @@ app.listen(5000, () => {
 await testDbConnection();
 
 try {
-    await sequelize.sync();
+    await sequelize.sync({ alter: true });
     console.log("Database synced");
 } catch(error) {
     console.error('Error in database sync: ', error)
 }
-

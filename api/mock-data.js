@@ -1,6 +1,8 @@
 import { faker } from '@faker-js/faker';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImsxN3FUaE5IaWJGSmRid0hySllPSiJ9.eyJpc3MiOiJodHRwczovL2Rldi13NHZnY3gxZS51cy5hdXRoMC5jb20vIiwic3ViIjoiZ29vZ2xlLW9hdXRoMnwxMTAyOTU4OTQ1ODQ5MTg3MjAxMzEiLCJhdWQiOlsibmV4dXMtYXBpIiwiaHR0cHM6Ly9kZXYtdzR2Z2N4MWUudXMuYXV0aDAuY29tL3VzZXJpbmZvIl0sImlhdCI6MTc1MDI4NzQ4NywiZXhwIjoxNzUwMzczODg3LCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIiwiYXpwIjoiNkJsWU0zVGN6YndzNU54VVhUT2VDVVVyNGQyeFFyZ3MifQ.ETKoVFeDdDExdg4Sc-ctWjsmGD90pEJs1I7ppEZKEwR1l1fE79FXMOoa4Ekg7GLzM_23_icy-872ZKzczDq3Htfou62mEcN0rjCNG_NjdOlRkt-D5ipHVjsQ9mc8vr3cKAr69GBzj9vWRQ8wOXeuIwTPU6FQGj8e3FwpuEE0xkNkk5S9e40Mkt19USTJG-5F0jLWq-q9tDuF40vWzfMnMAtyMqKinFATW_1LEOzlPiJZZVFuWdspr-cS8o_nWL9RbjzUm2ev55LJNFNAwO-3bR2Pzisvcw0Xge_XX-_Vmv7clEusRNqVSmky3nhWRXUJ_1UYm7gpfK4V5vNvVSd5Ug"
+const token = process.env.AUTH_TOKEN;
 
 async function createFakeProducts() {
     for (let i = 0; i < 100; i++) {
@@ -32,9 +34,6 @@ async function createFakeProducts() {
         } catch (error) {
             console.error(`Failed to create product ${i + 1}:`, error);
         }
-        
-        // Optional: Add delay to avoid overwhelming the server
-        // await new Promise(resolve => setTimeout(resolve, 100));
     }
 }
 
