@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import Shop from '../models/Shop.js';
+import Product from '../models/Product.js';
 import session from 'express-session';
 import Order from '../models/Order.js';
 
