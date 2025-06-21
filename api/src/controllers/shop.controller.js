@@ -221,3 +221,24 @@ export const getOneShopOrder = async (req, res) => {
         res.status(500).json({ message: "Internal server error" })
     }
 };
+
+export const updateShopOrderStatus = async (req, res) => {
+    const { orderId } = req.params;
+    const { status } = req.body;
+
+    try {
+        const order = await Order.findByPk(orderId);
+
+        if (order) {
+            await order.update({ status });
+
+            res.status(200).json({ order });
+        } else {
+            res.status(404).json({ message: "Order not found" });
+        }
+
+    } catch (error) {
+        console.error("Error updating order status: ", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}

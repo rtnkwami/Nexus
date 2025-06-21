@@ -7,7 +7,7 @@ import {
     getOneShopProduct,
     deleteShopProduct
 } from '../controllers/shop.controller.js';
-import { getShopOrders, getOneShopOrder } from '../controllers/shop.controller.js';
+import { getShopOrders, getOneShopOrder, updateShopOrderStatus } from '../controllers/shop.controller.js';
 import checkJwt from '../utils/verifyJwt.js';
 
 const router = express.Router();
@@ -22,5 +22,6 @@ router.put('/', checkJwt, updateShopMetadata);
 
 router.get('/orders', checkJwt, getShopOrders);
 router.get('/orders/:orderId', checkJwt, getOneShopOrder);
+router.put('/orders/:orderId', checkJwt, updateShopOrderStatus);
 
 export default router;
