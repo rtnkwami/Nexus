@@ -4,11 +4,11 @@ A marketplace API for browsing products, managing shops, and handling orders.
 
 ## Quick Navigation
 
-- [Shopping Experience](#-shopping-experience) - Browse products and manage cart
-- [Order Management](#-order-management) - Place and track orders  
-- [Shop Management](#-shop-management) - Manage your shop and inventory
-- [User Setup](#-user-setup) - Initial user and shop creation
-- [Utilities](#-utilities) - Health checks and testing
+- [Shopping Experience](#shopping-experience) - Browse products and manage cart
+- [Order Management](#order-management) - Place and track orders  
+- [Shop Management](#shop-management) - Manage your shop and inventory
+- [User Setup](#user-setup) - Initial user and shop creation
+- [Utilities](#utilities) - Health checks and testing
 
 ---
 
