@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import Shop from '../models/Shop.js';
 import Product from '../models/Product.js';
+import { sequelize } from '../models/index.js';
 import session from 'express-session';
 import Order from '../models/Order.js';
 
@@ -79,30 +80,50 @@ export const getOneUserOrder = async (req, res) => {
     }
 }
 export const placeOrder = async (req, res) => {
+    const transaction = await sequelize.transaction();
+
     try { 
         const { sub } = req.auth.payload;
         const cart = req.session.cart || [];
     
-        if (cart.length === 0) { return res.status(400).json({ message: "Cart cannot be empty" }) };
+        if (cart.length === 0) {
+            await transaction.rollback();
+            return res.status(400).json({ message: "Cart cannot be empty" })
+        };
     
-        const user = await User.findOne({ where: { auth0_uid: sub } });
-        const shop = await Shop.findOne({ where: { UserId: user.id } });
-        const order = await Order.create({ UserId: user.id, ShopId: shop.id });
+        const user = await User.findOne({
+            where: { auth0_uid: sub },
+            transaction 
+        });
 
-        const t = await sequelize.transaction();
+        const shop = await Shop.findOne({
+            where: { UserId: user.id },
+            transaction 
+        });
 
-    
+        const order = await Order.create({
+            UserId: user.id,
+            ShopId: shop.id
+        },{ transaction });
+
         for (const item of cart) { 
-            const product = await Product.findByPk(item.id, { transaction: t });
+            const product = await Product.findByPk(item.id, { transaction });
 
             await order.addProduct(product, {
                 through: {
                     quantity: item.quantity,
                     priceAtTime: product.price
-                }
-            })
-        }
+                },
+                transaction
+            });
 
+            await product.decrement('stock', { 
+                by: item.quantity,
+                transaction
+            });
+        };
+
+        await transaction.commit();
         req.session.cart = [];
     
         return res.status(201).json({
@@ -112,6 +133,7 @@ export const placeOrder = async (req, res) => {
         });
 
     } catch (error) {
+        await transaction.rollback();
         console.error("Error creating order: ", error);
         return res.status(500).json({ message: "Internal server error" });
     }
