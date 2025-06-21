@@ -59,27 +59,23 @@ export const getOneUserOrder = async (req, res) => {
     try {
         const { orderId } = req.params;
 
-        const order = await Order.findByPk(orderId, {
-            include: {
-                model: Product,
-                attributes: ['id', 'name', 'category'],
-                through: {
-                    attributes: ['quantity', 'priceAtTime']
-                }
+        const order = await Order.findByPk(orderId);
+        if (!order){ return res.status(404).json({ message: "Order doesn't exist" }) }
+
+        const orderProducts = await order.getProducts({
+            attributes: ['id', 'name', 'category'],
+            through: {
+                attributes: ['quantity', 'priceAtTime']
             }
         });
 
-        if (!order){ return res.status(404).json({ message: "Order doesn't exist" }) }
-
-        return res.status(200).json({ order });
+        return res.status(200).json({ order, products: orderProducts });
         
-
     } catch (error) {
         console.error("Error getting orders: ", error);
         return res.status(500).json({ message: "Internal server error" });
     }
 }
-
 export const placeOrder = async (req, res) => {
     try { 
         const { sub } = req.auth.payload;
@@ -90,9 +86,12 @@ export const placeOrder = async (req, res) => {
         const user = await User.findOne({ where: { auth0_uid: sub } });
         const shop = await Shop.findOne({ where: { UserId: user.id } });
         const order = await Order.create({ UserId: user.id, ShopId: shop.id });
+
+        const t = await sequelize.transaction();
+
     
         for (const item of cart) { 
-            const product = await Product.findByPk(item.id);
+            const product = await Product.findByPk(item.id, { transaction: t });
 
             await order.addProduct(product, {
                 through: {
