@@ -4,15 +4,15 @@ A marketplace API for browsing products, managing shops, and handling orders.
 
 ## Quick Navigation
 
-- [🛍️ Shopping Experience](#shopping-experience) - Browse products and manage cart
-- [📦 Order Management](#order-management) - Place and track orders  
-- [🏪 Shop Management](#shop-management) - Manage your shop and inventory
-- [👤 User Setup](#user-setup) - Initial user and shop creation
-- [🔧 Utilities](#utilities) - Health checks and testing
+- [Shopping Experience](#-shopping-experience) - Browse products and manage cart
+- [Order Management](#-order-management) - Place and track orders  
+- [Shop Management](#-shop-management) - Manage your shop and inventory
+- [User Setup](#-user-setup) - Initial user and shop creation
+- [Utilities](#-utilities) - Health checks and testing
 
 ---
 
-## 🛍️ Shopping Experience
+## Shopping Experience
 
 ### Browse Products
 ```http
@@ -111,7 +111,7 @@ DELETE /carts/:productId
 
 ---
 
-## 📦 Order Management
+## Order Management
 
 ### Place Order
 ```http
@@ -190,7 +190,7 @@ GET /users/orders/:orderId
 
 ---
 
-## 🏪 Shop Management
+## Shop Management
 
 ### Inventory Management
 
@@ -311,7 +311,7 @@ PUT /shops/orders/:orderId
 
 ---
 
-## 👤 User Setup
+## User Setup
 
 ### Initialize User & Shop
 ```http
@@ -346,7 +346,7 @@ POST /users
 
 ---
 
-## 🔧 Utilities
+## Utilities
 
 ### Health Check
 ```http
