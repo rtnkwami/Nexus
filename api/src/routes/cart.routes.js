@@ -9,7 +9,6 @@ router.use(appSession);
 
 router.get('/', getCart);
 router.post('/items', addToCart);
-router.post('/checkout', checkJwt, placeOrder);
 router.delete('/items/:id', removeFromCart);
 
 export default router;
