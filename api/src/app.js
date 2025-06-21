@@ -3,7 +3,6 @@ import userRoutes from './routes/user.routes.js';
 import shopRoutes from './routes/shops.routes.js';
 import productRoutes from './routes/products.routes.js';
 import cartRoutes from './routes/cart.routes.js';
-import orderRoutes from './routes/orders.routes.js'
 import checkJwt from './utils/verifyJwt.js';
 import cors from 'cors';
 
@@ -19,7 +18,6 @@ app.use('/users', userRoutes);
 app.use('/shops', shopRoutes);
 app.use('/products', productRoutes);
 app.use('/carts', cartRoutes);
-app.use('/orders', orderRoutes);
 
 app.get('/', checkJwt, (req, res) => {
     res.status(200).json({ message: "Correctly authenticated app!" });
