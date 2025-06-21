@@ -317,7 +317,7 @@ PUT /shops/orders/:orderId
 ```http
 POST /users
 ```
-**Purpose:** Create user profile and associated shop (first-time setup)  
+**Purpose:** Create user profile and associated shop (first-time setup). This is done the first time a user signs in automatically.  
 **Auth:** Required  
 **Body:**
 ```json
