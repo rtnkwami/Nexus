@@ -118,6 +118,11 @@ export const placeOrder = async (req, res) => {
 
         for (const item of cart) { 
             const product = await Product.findByPk(item.id, { transaction });
+            
+            if (product.stock < item.quantity) {
+                await transaction.rollback();
+                return res.status(400).json({ message: `Insufficient stock for product ${product.name}` });
+            }
 
             await order.addProduct(product, {
                 through: {
