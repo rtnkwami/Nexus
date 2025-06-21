@@ -151,8 +151,8 @@ GET /users/orders
       "total": 59.98,
       "createdAt": "2025-01-15T10:30:00Z",
       "updatedAt": "2025-01-15T10:30:00Z",
-      "ShopId":"2sffcsec7-40e5-4357-be5e-e268bdaddad3",
-      "UserId":"4dgdgfsf0-c975-4549-a08a-9f3c1f8202ae"
+      "ShopId":"shop-uuid",
+      "UserId":"user-uuid"
     }
   ]
 }
@@ -174,8 +174,8 @@ GET /users/orders/:orderId
     "total": 59.98,
     "createdAt": "2025-01-15T10:30:00Z",
     "updatedAt": "2025-01-15T10:30:00Z",
-    "ShopId":"2sffcsec7-40e5-4357-be5e-e268bdaddad3",
-    "UserId":"4dgdgfsf0-c975-4549-a08a-9f3c1f8202ae"
+    "ShopId":"shop-uuid",
+    "UserId":"user-uuid"
   },
   "products": [
     {
@@ -280,8 +280,8 @@ GET /shops/orders
       "total": 59.98,
       "createdAt": "2025-01-15T10:30:00Z",
       "updatedAt": "2025-01-15T10:30:00Z",
-      "ShopId":"2sffcsec7-40e5-4357-be5e-e268bdaddad3",
-      "UserId":"4dgdgfsf0-c975-4549-a08a-9f3c1f8202ae"
+      "ShopId":"shop-uuid",
+      "UserId":"user-uuid"
     }
   ]
 }
