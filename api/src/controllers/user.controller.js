@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import Shop from '../models/Shop.js';
 import session from 'express-session';
+import Order from '../models/Order.js';
 
 export const getUserMetadata = async (req, res) => {
     const { sub, name } = req.body.user;
