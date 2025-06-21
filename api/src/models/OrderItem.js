@@ -16,7 +16,7 @@ const OrderItem = sequelize.define('OrderItem',
         priceAtTime: {
             type: DataTypes.DECIMAL(10, 2),
             get() {
-                const rawValue = this.getDataValue('price');
+                const rawValue = this.getDataValue('priceAtTime');
                 return rawValue === null ? null : Number(rawValue);
             },
             allowNull: false,
