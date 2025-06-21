@@ -1,5 +1,7 @@
 import Shop from "../models/Shop.js";
 import Product from "../models/Product.js";
+import User from "../models/User.js";
+import Order from "../models/Order.js";
 import { removeUndefined } from "../utils/cleanInputs.js";
 import { Op } from "sequelize";
 import { getUserShopId } from "../utils/getUserShop.js";
@@ -168,3 +170,28 @@ export const deleteShopProduct = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 }
+
+export const getShopOrders = async (req, res) => {
+    try {
+        const { sub } = req.auth.payload;
+        
+        const user = await User.findOne({ where: { auth0_uid: sub } });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const shop = await Shop.findOne({ where: { UserId: user.id } });
+        if (!shop) {
+            return res.status(404).json({ message: "Shop not found" });
+        }
+
+        const orders = await Order.findAll({ where: { ShopId: shop.id } });
+
+        if (!orders) { return res.status(404).json({ message: "No orders have been placed." }) };
+        return res.status(200).json({ orders });
+
+    } catch (error) {
+        console.error("Error getting orders: ", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
