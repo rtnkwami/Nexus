@@ -11,6 +11,15 @@ const Order = sequelize.define('Order',
         status: {
             type: DataTypes.ENUM('pending', 'completed', 'cancelled'),
             defaultValue: 'pending'
+        },
+        total: {
+            type: DataTypes.DECIMAL(10, 2),
+            allowNull: false,
+            defaultValue: 0,
+            get() {
+                const rawValue = this.getDataValue('total');
+                return rawValue === null ? null : Number(rawValue);
+            }
         }
     },
     {
