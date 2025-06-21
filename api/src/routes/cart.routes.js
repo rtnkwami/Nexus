@@ -1,7 +1,6 @@
 import express from 'express';
 import { appSession } from '../config/sessionConfig.js';
-import { addToCart, getCart, removeFromCart, placeOrder } from '../controllers/cart.controller.js';
-import checkJwt from '../utils/verifyJwt.js';
+import { addToCart, getCart, removeFromCart } from '../controllers/cart.controller.js';
 
 const router = express.Router();
 
