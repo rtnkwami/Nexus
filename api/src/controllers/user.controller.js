@@ -38,12 +38,17 @@ export const getUserMetadata = async (req, res) => {
     }
 }
 
-export const getUserCart = async (req, res) => {
-    if (!req.session.cart) { req.session.cart = [] };
-
+export const getUserOrders = async (req, res) => {
     try {
-        
+        const { sub } = req.auth.payload;
+        const user = await User.findOne({ where: { auth0_uid: sub } });
+        const orders = await Order.findAll({ where: { UserId: user.id } });
+
+        if (!orders) { return res.status(404).json({ message: "No orders have been placed." }) };
+        return res.status(200).json({ orders });
+
     } catch (error) {
-        
+        console.error("Error getting orders: ", error);
+        return res.status(500).json({ message: "Internal server error" });
     }
-}
+};
