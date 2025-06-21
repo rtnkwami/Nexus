@@ -27,7 +27,8 @@ export const enrichCart = async (cart) => {
             name: product.name,
             price: product.price,
             category: product.category,
-            quantity: cartItem.quantity
+            quantity: cartItem.quantity,
+            subtotal: totalProductPrice,
         };
     });
 

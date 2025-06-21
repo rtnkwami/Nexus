@@ -8,18 +8,20 @@
   - [Shops Routes (`/shops`)](#shops-routes-shops)
   - [Products Routes (`/products`)](#products-routes-products)
   - [Carts Routes (`/carts`)](#carts-routes-carts)
-  - [Orders Routes (`/orders`)](#orders-routes-orders)
   - [Root Route (`/`)](#root-route-)
 
 ---
 
 ## Users Routes (`/users`)
 
-| Method | Endpoint      | Description                   | Auth Required | Body / Params         |
-|--------|--------------|-------------------------------|---------------|-----------------------|
-| POST   | `/`          | Get or create user metadata and shop. Returns user and shop info. | ✅            | `{ user: { sub, name } }` |
+| Method | Endpoint         | Description                                         | Auth Required | Body / Params                  |
+|--------|------------------|-----------------------------------------------------|---------------|--------------------------------|
+| POST   | `/`              | Get or create user metadata and shop. Returns user and shop info. | ✅            | `{ user: { sub, name } }`      |
+| GET    | `/orders`        | Get all orders for the user.                        | ✅            | -                              |
+| GET    | `/orders/:orderId` | Get a single order for the user.                  | ✅            | `orderId` (URL param)          |
+| POST   | `/orders`        | Place an order for the current cart.                | ✅            | -                              |
 
-**Success Response (200):**
+**POST `/users` Success Response (200):**
 ```json
 {
   "user": {
@@ -33,23 +35,59 @@
   }
 }
 ```
-**Error Response (500):**
+**GET `/users/orders` Success Response (200):**
+```json
+{
+  "orders": [ /* array of order objects */ ]
+}
+```
+**GET `/users/orders/:orderId` Success Response (200):**
+```json
+{
+  "order": { /* order object */ },
+  "products": [ /* array of product objects with quantity and priceAtTime */ ]
+}
+```
+**POST `/users/orders` Success Response (201):**
+```json
+{
+  "success": true,
+  "orderId": "uuid",
+  "message": "Order created successfully"
+}
+```
+**Error Responses:**
 ```json
 { "message": "Internal server error" }
+```
+```json
+{ "message": "No orders have been placed." }
+```
+```json
+{ "message": "Order doesn't exist" }
+```
+```json
+{ "message": "Cart cannot be empty" }
+```
+```json
+{ "message": "Insufficient stock for product <productName>" }
 ```
 
 ---
 
 ## Shops Routes (`/shops`)
 
-| Method | Endpoint                  | Description                                   | Auth Required | Body / Params         |
-|--------|---------------------------|-----------------------------------------------|---------------|-----------------------|
-| GET    | `/products`               | Get all products for the authenticated user's shop (with pagination and filters). | ✅            | Query: `page`, `limit`, `category`, `minPrice`, `maxPrice`, `search` |
-| GET    | `/products/:productId`    | Get a single product by ID from the user's shop. | ✅            | `productId` (URL param) |
-| POST   | `/products`               | Create a new product in the user's shop.      | ✅            | `{ product: { name, description, price, stock, category } }` |
-| PUT    | `/products/:productId`    | Update a product in the user's shop.          | ✅            | `{ product: { name, description, price, stock, category } }`, `productId` (URL param) |
-| DELETE | `/products/:productId`    | Delete a product from the user's shop.        | ✅            | `productId` (URL param) |
-| PUT    | `/`                       | Update shop metadata (name, description).     | ✅            | `{ shop: { name, description } }` |
+| Method | Endpoint                       | Description                                              | Auth Required | Body / Params                                 |
+|--------|------------------------------- |----------------------------------------------------------|---------------|-----------------------------------------------|
+| GET    | `/products`                    | Get all products for the authenticated user's shop (with pagination and filters). | ✅            | Query: `page`, `limit`, `category`, `minPrice`, `maxPrice`, `search` |
+| GET    | `/products/:productId`         | Get a single product by ID from the user's shop.         | ✅            | `productId` (URL param)                       |
+| POST   | `/products`                    | Create a new product in the user's shop.                 | ✅            | `{ product: { name, description, price, stock, category } }` |
+| PUT    | `/products/:productId`         | Update a product in the user's shop.                     | ✅            | `{ product: { name, description, price, stock, category } }`, `productId` (URL param) |
+| DELETE | `/products/:productId`         | Delete a product from the user's shop.                   | ✅            | `productId` (URL param)                       |
+| PUT    | `/`                            | Update shop metadata (name, description).                | ✅            | `{ shop: { name, description } }`             |
+| GET    | `/orders`                      | Get all orders for the shop.                             | ✅            | -                                             |
+| GET    | `/orders/:orderId`             | Get a single order for the shop.                         | ✅            | `orderId` (URL param)                         |
+| PUT    | `/orders/:orderId`             | Update the status of an order for the shop.              | ✅            | `{ status: "newStatus" }`, `orderId` (URL param) |
 
 **GET `/shops/products` Success Response (200):**
 ```json
@@ -64,11 +102,35 @@
   }
 }
 ```
-**Error Response (500):**
+**GET `/shops/products/:productId` Success Response (200):**
 ```json
-{ "message": "Internal server error" }
+{
+  "product": { /* product object */ }
+}
 ```
-
+**POST `/shops/products` Success Response (201):**
+```json
+{
+  "product": {
+    "id": "uuid",
+    "name": "string",
+    "description": "string",
+    "category": "string",
+    "price": 0,
+    "stock": 0
+  }
+}
+```
+**PUT `/shops/products/:productId` Success Response (201):**
+```json
+{
+  "product": { /* updated product object */ }
+}
+```
+**DELETE `/shops/products/:productId` Success Response (200):**
+```json
+{ "message": "Product deleted" }
+```
 **PUT `/shops` Success Response (201):**
 ```json
 {
@@ -78,6 +140,43 @@
     "description": "string"
   }
 }
+```
+**GET `/shops/orders` Success Response (200):**
+```json
+{
+  "orders": [ /* array of order objects */ ]
+}
+```
+**GET `/shops/orders/:orderId` Success Response (200):**
+```json
+{
+  "order": { /* order object with products */ }
+}
+```
+**PUT `/shops/orders/:orderId` Success Response (200):**
+```json
+{
+  "order": { /* updated order object */ }
+}
+```
+**Error Responses:**
+```json
+{ "message": "Internal server error" }
+```
+```json
+{ "message": "User not found" }
+```
+```json
+{ "message": "Shop not found" }
+```
+```json
+{ "message": "No orders have been placed." }
+```
+```json
+{ "message": "Order not found" }
+```
+```json
+{ "message": "Shop doesn't exist" }
 ```
 
 ---
@@ -113,59 +212,52 @@
 | Method | Endpoint         | Description                       | Auth Required | Body / Params         |
 |--------|------------------|-----------------------------------|---------------|-----------------------|
 | GET    | `/`              | Get current cart with details.     | ❌            | -                     |
-| POST   | `/items`         | Add a product to the cart.         | ❌            | `{ id, quantity }`    |
-| DELETE | `/items/:id`     | Remove a product from the cart.    | ❌            | `id` (URL param)      |
-| POST   | `/checkout`      | Place an order for the cart items. | ✅            | -                     |
+| POST   | `/`              | Add a product to the cart.         | ❌            | `{ id, quantity }`    |
+| PUT    | `/:productId`    | Edit quantity of a product in cart.| ❌            | `{ quantity }`, `productId` (URL param) |
+| DELETE | `/:productId`    | Remove a product from the cart.    | ❌            | `productId` (URL param)      |
 
 **GET `/carts` Success Response (200):**
 ```json
 {
-  "cart": [ /* array of cart items */ ],
+  "cart": [ /* array of cart items with details */ ],
   "cartTotal": 123.45
 }
 ```
-**POST `/carts/items` Success Response (200):**
+**POST `/carts` Success Response (200):**
 ```json
 {
   "cart": [ /* updated array of cart items */ ]
 }
 ```
-**DELETE `/carts/items/:id` Success Response (200):**
+**PUT `/carts/:productId` Success Response (200):**
 ```json
 {
+  "message": "Cart item updated successfully",
+  "updatedCartItem": { /* updated cart item */ },
   "cart": [ /* updated array of cart items */ ]
 }
 ```
-**POST `/carts/checkout` Success Response (201):**
+**DELETE `/carts/:productId` Success Response (200):**
 ```json
 {
-  "order": { /* order details */ }
+  "message": "Product removed from cart successfully",
+  "removedProduct": { /* removed product */ },
+  "cart": [ /* updated array of cart items */ ]
 }
 ```
-**Error Response (500):**
+**Error Responses:**
 ```json
-{ "message": "Internal server error" }
+{ "message": "Invalid product id" }
 ```
-
----
-
-## Orders Routes (`/orders`)
-
-| Method | Endpoint | Description                       | Auth Required | Body / Params         |
-|--------|----------|-----------------------------------|---------------|-----------------------|
-| GET    | `/`      | Get all orders for the user.      | ✅            | -                     |
-
-**Success Response (200):**
 ```json
-{
-  "orders": [ /* array of order objects */ ]
-}
+{ "message": "Product not found in cart" }
 ```
-**Error Response (404):**
 ```json
-{ "message": "No orders have been placed." }
+{ "message": "Cart is empty" }
 ```
-**Error Response (500):**
+```json
+{ "message": "Quantity must be greater than zero" }
+```
 ```json
 { "message": "Internal server error" }
 ```
@@ -190,4 +282,4 @@
 **Notes:**
 - ✅ = Requires JWT authentication
 - All endpoints expect and return JSON.
-- Pagination and filtering are available on product listing endpoints
+- Pagination and filtering are available on product listing endpoints via query parameters.
