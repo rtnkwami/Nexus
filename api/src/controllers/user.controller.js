@@ -132,6 +132,9 @@ export const placeOrder = async (req, res) => {
                 transaction
             });
 
+            const total = Math.round((item.quantity * product.price) * 100) / 100;
+            await order.update({ total: order.total + total }, { transaction });
+
             await product.decrement('stock', { 
                 by: item.quantity,
                 transaction
