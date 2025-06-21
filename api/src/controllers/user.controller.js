@@ -44,7 +44,9 @@ export const getUserOrders = async (req, res) => {
     try {
         const { sub } = req.auth.payload;
         const user = await User.findOne({ where: { auth0_uid: sub } });
-        const orders = await Order.findAll({ where: { UserId: user.id } });
+        if (!user) { return res.status(404).json({ message: "User not found" }) };
+
+        const orders = await user.getOrders();
 
         if (!orders) { return res.status(404).json({ message: "No orders have been placed." }) };
         return res.status(200).json({ orders });
