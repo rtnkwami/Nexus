@@ -1,276 +1,361 @@
-# Nexus API
+# Nexus API Documentation
 
-## Table of Contents
+A marketplace API for browsing products, managing shops, and handling orders.
 
-- [Nexus API](#nexus-api)
-  - [Table of Contents](#table-of-contents)
-  - [Users Routes (`/users`)](#users-routes-users)
-  - [Shops Routes (`/shops`)](#shops-routes-shops)
-  - [Products Routes (`/products`)](#products-routes-products)
-  - [Carts Routes (`/carts`)](#carts-routes-carts)
-  - [Root Route (`/`)](#root-route-)
+## Quick Navigation
+
+- [🛍️ Shopping Experience](#shopping-experience) - Browse products and manage cart
+- [📦 Order Management](#order-management) - Place and track orders  
+- [🏪 Shop Management](#shop-management) - Manage your shop and inventory
+- [👤 User Setup](#user-setup) - Initial user and shop creation
+- [🔧 Utilities](#utilities) - Health checks and testing
 
 ---
 
-## Users Routes (`/users`)
+## 🛍️ Shopping Experience
 
-| Method | Endpoint         | Description                                         | Auth Required | Body / Params                  |
-|--------|------------------|-----------------------------------------------------|---------------|--------------------------------|
-| POST   | `/`              | Get or create user metadata and shop. Returns user and shop info. | ✅            | `{ user: { sub, name } }`      |
-| GET    | `/orders`        | Get all orders for the user.                        | ✅            | -                              |
-| GET    | `/orders/:orderId` | Get a single order for the user.                  | ✅            | `orderId` (URL param)          |
-| POST   | `/orders`        | Place an order for the current cart.                | ✅            | -                              |
+### Browse Products
+```http
+GET /products
+```
+**Purpose:** Browse all available products across the marketplace  
+**Auth:** Not required  
+**Query Parameters:**
+- `page` - Page number for pagination
+- `limit` - Items per page  
+- `category` - Filter by product category
+- `minPrice` / `maxPrice` - Price range filtering
+- `search` - Search product names/descriptions
 
-**POST `/users` Success Response (200):**
+**Response:**
 ```json
 {
-  "user": {
-    "id": "uuid",
-    "username": "string"
-  },
-  "userShop": {
-    "id": "uuid",
-    "name": "string",
-    "description": "string"
+  "products": [
+    {
+      "id": "uuid",
+      "name": "Product Name",
+      "description": "Product description",
+      "price": 29.99,
+      "stock": 100,
+      "category": "Electronics"
+    }
+  ],
+  "pagination": {
+    "currentPage": 1,
+    "totalPages": 5,
+    "totalProducts": 50,
+    "hasNextPage": true,
+    "hasPreviousPage": false
   }
 }
 ```
-**GET `/users/orders` Success Response (200):**
+
+### Cart Management
+
+#### Get Current Cart
+```http
+GET /carts
+```
+**Purpose:** View current cart contents and total  
+**Auth:** Not required
+
+**Response:**
 ```json
 {
-  "orders": [ /* array of order objects */ ]
+  "cart": [
+    {
+      "id": "product-uuid",
+      "name": "Product Name", 
+      "price": 29.99,
+      "quantity": 2,
+      "subtotal": 59.98
+    }
+  ],
+  "cartTotal": 59.98
 }
 ```
-**GET `/users/orders/:orderId` Success Response (200):**
+
+#### Add to Cart
+```http
+POST /carts
+```
+**Purpose:** Add a product to the shopping cart  
+**Auth:** Not required  
+**Body:**
 ```json
 {
-  "order": { /* order object */ },
-  "products": [ /* array of product objects with quantity and priceAtTime */ ]
+  "id": "product-uuid",
+  "quantity": 2
 }
 ```
-**POST `/users/orders` Success Response (201):**
+
+#### Update Cart Item
+```http
+PUT /carts/:productId
+```
+**Purpose:** Change quantity of an item in cart  
+**Auth:** Not required  
+**Body:**
+```json
+{
+  "quantity": 3
+}
+```
+
+#### Remove from Cart
+```http
+DELETE /carts/:productId
+```
+**Purpose:** Remove an item completely from cart  
+**Auth:** Not required
+
+---
+
+## 📦 Order Management
+
+### Place Order
+```http
+POST /users/orders
+```
+**Purpose:** Convert current cart into an order  
+**Auth:** Required  
+**Body:** None (uses current cart)
+
+**Success Response:**
 ```json
 {
   "success": true,
-  "orderId": "uuid",
+  "orderId": "order-uuid",
   "message": "Order created successfully"
 }
 ```
-**Error Responses:**
-```json
-{ "message": "Internal server error" }
+
+**Common Errors:**
+- `"Cart cannot be empty"` - Add items to cart first
+- `"Insufficient stock for product <name>"` - Product out of stock
+
+### View My Orders
+```http
+GET /users/orders
 ```
+**Purpose:** Get all orders placed by the current user  
+**Auth:** Required
+
+**Response:**
 ```json
-{ "message": "No orders have been placed." }
+{
+  "orders": [
+    {
+      "id": "order-uuid",
+      "status": "pending",
+      "total": 59.98,
+      "createdAt": "2025-01-15T10:30:00Z",
+      "updatedAt": "2025-01-15T10:30:00Z",
+      "ShopId":"2sffcsec7-40e5-4357-be5e-e268bdaddad3",
+      "UserId":"4dgdgfsf0-c975-4549-a08a-9f3c1f8202ae"
+    }
+  ]
+}
 ```
-```json
-{ "message": "Order doesn't exist" }
+
+### View Order Details
+```http
+GET /users/orders/:orderId
 ```
+**Purpose:** Get detailed information about a specific order  
+**Auth:** Required
+
+**Response:**
 ```json
-{ "message": "Cart cannot be empty" }
-```
-```json
-{ "message": "Insufficient stock for product <productName>" }
+{
+  "order": {
+    "id": "order-uuid",
+    "status": "pending",
+    "total": 59.98,
+    "createdAt": "2025-01-15T10:30:00Z",
+    "updatedAt": "2025-01-15T10:30:00Z",
+    "ShopId":"2sffcsec7-40e5-4357-be5e-e268bdaddad3",
+    "UserId":"4dgdgfsf0-c975-4549-a08a-9f3c1f8202ae"
+  },
+  "products": [
+    {
+      "id": "product-uuid",
+      "name": "Product Name",
+      "quantity": 2,
+      "priceAtTime": 29.99
+    }
+  ]
+}
 ```
 
 ---
 
-## Shops Routes (`/shops`)
+## 🏪 Shop Management
 
-| Method | Endpoint                       | Description                                              | Auth Required | Body / Params                                 |
-|--------|------------------------------- |----------------------------------------------------------|---------------|-----------------------------------------------|
-| GET    | `/products`                    | Get all products for the authenticated user's shop (with pagination and filters). | ✅            | Query: `page`, `limit`, `category`, `minPrice`, `maxPrice`, `search` |
-| GET    | `/products/:productId`         | Get a single product by ID from the user's shop.         | ✅            | `productId` (URL param)                       |
-| POST   | `/products`                    | Create a new product in the user's shop.                 | ✅            | `{ product: { name, description, price, stock, category } }` |
-| PUT    | `/products/:productId`         | Update a product in the user's shop.                     | ✅            | `{ product: { name, description, price, stock, category } }`, `productId` (URL param) |
-| DELETE | `/products/:productId`         | Delete a product from the user's shop.                   | ✅            | `productId` (URL param)                       |
-| PUT    | `/`                            | Update shop metadata (name, description).                | ✅            | `{ shop: { name, description } }`             |
-| GET    | `/orders`                      | Get all orders for the shop.                             | ✅            | -                                             |
-| GET    | `/orders/:orderId`             | Get a single order for the shop.                         | ✅            | `orderId` (URL param)                         |
-| PUT    | `/orders/:orderId`             | Update the status of an order for the shop.              | ✅            | `{ status: "newStatus" }`, `orderId` (URL param) |
+### Inventory Management
 
-**GET `/shops/products` Success Response (200):**
-```json
-{
-  "products": [ /* array of product objects */ ],
-  "pagination": {
-    "currentPage": 1,
-    "totalPages": 2,
-    "totalProducts": 50,
-    "hasNextPage": true,
-    "hasPreviousPage": false
-  }
-}
+#### View My Products
+```http
+GET /shops/products
 ```
-**GET `/shops/products/:productId` Success Response (200):**
-```json
-{
-  "product": { /* product object */ }
-}
+**Purpose:** Get all products in your shop  
+**Auth:** Required  
+**Query Parameters:** Same as global product browsing
+
+#### Get Single Product
+```http
+GET /shops/products/:productId
 ```
-**POST `/shops/products` Success Response (201):**
+**Purpose:** Get details of one of your products  
+**Auth:** Required
+
+#### Add New Product
+```http
+POST /shops/products
+```
+**Purpose:** Create a new product in your shop  
+**Auth:** Required  
+**Body:**
 ```json
 {
   "product": {
-    "id": "uuid",
-    "name": "string",
-    "description": "string",
-    "category": "string",
-    "price": 0,
-    "stock": 0
+    "name": "New Product",
+    "description": "Product description",
+    "price": 29.99,
+    "stock": 100,
+    "category": "Electronics"
   }
 }
 ```
-**PUT `/shops/products/:productId` Success Response (201):**
+
+#### Update Product
+```http
+PUT /shops/products/:productId
+```
+**Purpose:** Edit an existing product  
+**Auth:** Required  
+**Body:** Same as create product
+
+#### Delete Product
+```http
+DELETE /shops/products/:productId
+```
+**Purpose:** Remove a product from your shop  
+**Auth:** Required
+
+### Shop Settings
+
+#### Update Shop Info
+```http
+PUT /shops
+```
+**Purpose:** Update your shop's name and description  
+**Auth:** Required  
+**Body:**
 ```json
 {
-  "product": { /* updated product object */ }
+  "shop": {
+    "name": "My Awesome Shop",
+    "description": "We sell the best products!"
+  }
 }
 ```
-**DELETE `/shops/products/:productId` Success Response (200):**
-```json
-{ "message": "Product deleted" }
+
+### Order Fulfillment
+
+#### View Shop Orders
+```http
+GET /shops/orders
 ```
-**PUT `/shops` Success Response (201):**
+**Purpose:** See all orders placed at your shop  
+**Auth:** Required
+
+**Response:**
 ```json
 {
+  "orders": [
+    {
+      "id": "order-uuid",
+      "status": "pending",
+      "total": 59.98,
+      "createdAt": "2025-01-15T10:30:00Z",
+      "updatedAt": "2025-01-15T10:30:00Z",
+      "ShopId":"2sffcsec7-40e5-4357-be5e-e268bdaddad3",
+      "UserId":"4dgdgfsf0-c975-4549-a08a-9f3c1f8202ae"
+    }
+  ]
+}
+```
+
+#### View Order Details
+```http
+GET /shops/orders/:orderId
+```
+**Purpose:** Get detailed information about an order at your shop  
+**Auth:** Required
+
+#### Update Order Status
+```http
+PUT /shops/orders/:orderId
+```
+**Purpose:** Update the fulfillment status of an order  
+**Auth:** Required  
+**Body:**
+```json
+{
+  "status": "shipped"
+}
+```
+
+**Common Statuses:** `pending`, `processing`, `shipped`, `delivered`, `cancelled`
+
+---
+
+## 👤 User Setup
+
+### Initialize User & Shop
+```http
+POST /users
+```
+**Purpose:** Create user profile and associated shop (first-time setup)  
+**Auth:** Required  
+**Body:**
+```json
+{
+  "user": {
+    "sub": "auth0-user-id",
+    "name": "John Doe"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "user": {
+    "id": "user-uuid",
+    "username": "john_doe"
+  },
   "userShop": {
-    "id": "uuid",
-    "name": "string",
-    "description": "string"
+    "id": "shop-uuid", 
+    "name": "John's Shop",
+    "description": "My marketplace shop"
   }
 }
 ```
-**GET `/shops/orders` Success Response (200):**
-```json
-{
-  "orders": [ /* array of order objects */ ]
-}
-```
-**GET `/shops/orders/:orderId` Success Response (200):**
-```json
-{
-  "order": { /* order object with products */ }
-}
-```
-**PUT `/shops/orders/:orderId` Success Response (200):**
-```json
-{
-  "order": { /* updated order object */ }
-}
-```
-**Error Responses:**
-```json
-{ "message": "Internal server error" }
-```
-```json
-{ "message": "User not found" }
-```
-```json
-{ "message": "Shop not found" }
-```
-```json
-{ "message": "No orders have been placed." }
-```
-```json
-{ "message": "Order not found" }
-```
-```json
-{ "message": "Shop doesn't exist" }
-```
 
 ---
 
-## Products Routes (`/products`)
+## 🔧 Utilities
 
-| Method | Endpoint | Description                                   | Auth Required | Query Params                  |
-|--------|----------|-----------------------------------------------|---------------|-------------------------------|
-| GET    | `/`      | Get all products (with pagination and filters). | ❌            | `page`, `limit`, `category`, `minPrice`, `maxPrice`, `search` |
+### Health Check
+```http
+GET /
+```
+**Purpose:** Test API connectivity and authentication  
+**Auth:** Required
 
-**Success Response (200):**
-```json
-{
-  "products": [ /* array of product objects */ ],
-  "pagination": {
-    "currentPage": 1,
-    "totalPages": 2,
-    "totalProducts": 50,
-    "hasNextPage": true,
-    "hasPreviousPage": false
-  }
-}
-```
-**Error Response (500):**
-```json
-{ "message": "Internal server error" }
-```
-
----
-
-## Carts Routes (`/carts`)
-
-| Method | Endpoint         | Description                       | Auth Required | Body / Params         |
-|--------|------------------|-----------------------------------|---------------|-----------------------|
-| GET    | `/`              | Get current cart with details.     | ❌            | -                     |
-| POST   | `/`              | Add a product to the cart.         | ❌            | `{ id, quantity }`    |
-| PUT    | `/:productId`    | Edit quantity of a product in cart.| ❌            | `{ quantity }`, `productId` (URL param) |
-| DELETE | `/:productId`    | Remove a product from the cart.    | ❌            | `productId` (URL param)      |
-
-**GET `/carts` Success Response (200):**
-```json
-{
-  "cart": [ /* array of cart items with details */ ],
-  "cartTotal": 123.45
-}
-```
-**POST `/carts` Success Response (200):**
-```json
-{
-  "cart": [ /* updated array of cart items */ ]
-}
-```
-**PUT `/carts/:productId` Success Response (200):**
-```json
-{
-  "message": "Cart item updated successfully",
-  "updatedCartItem": { /* updated cart item */ },
-  "cart": [ /* updated array of cart items */ ]
-}
-```
-**DELETE `/carts/:productId` Success Response (200):**
-```json
-{
-  "message": "Product removed from cart successfully",
-  "removedProduct": { /* removed product */ },
-  "cart": [ /* updated array of cart items */ ]
-}
-```
-**Error Responses:**
-```json
-{ "message": "Invalid product id" }
-```
-```json
-{ "message": "Product not found in cart" }
-```
-```json
-{ "message": "Cart is empty" }
-```
-```json
-{ "message": "Quantity must be greater than zero" }
-```
-```json
-{ "message": "Internal server error" }
-```
-
----
-
-## Root Route (`/`)
-
-| Method | Endpoint | Description                       | Auth Required | Body / Params         |
-|--------|----------|-----------------------------------|---------------|-----------------------|
-| GET    | `/`      | Test route, returns auth payload. | ✅            | -                     |
-
-**Success Response (200):**
+**Response:**
 ```json
 {
   "message": "Correctly authenticated app!"
@@ -279,7 +364,26 @@
 
 ---
 
-**Notes:**
-- ✅ = Requires JWT authentication
-- All endpoints expect and return JSON.
-- Pagination and filtering are available on product listing endpoints via query parameters.
+## Authentication
+
+Most endpoints require JWT authentication. Include your token in the Authorization header:
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+## Error Handling
+
+All endpoints return consistent error responses:
+```json
+{
+  "message": "Error description"
+}
+```
+
+Common HTTP status codes:
+- `200` - Success
+- `201` - Created successfully  
+- `400` - Bad request (validation error)
+- `401` - Unauthorized (missing/invalid auth)
+- `404` - Resource not found
+- `500` - Internal server error
