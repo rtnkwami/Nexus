@@ -53,3 +53,28 @@ export const getUserOrders = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
+
+export const getOneUserOrder = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+
+        const order = await Order.findByPk(orderId, {
+            include: {
+                model: Product,
+                attributes: ['id', 'name', 'category'],
+                through: {
+                    attributes: ['quantity', 'priceAtTime']
+                }
+            }
+        });
+
+        if (!order){ return res.status(404).json({ message: "Order doesn't exist" }) }
+
+        return res.status(200).json({ order });
+        
+
+    } catch (error) {
+        console.error("Error getting orders: ", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
