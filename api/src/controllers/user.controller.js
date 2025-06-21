@@ -72,7 +72,17 @@ export const getOneUserOrder = async (req, res) => {
             }
         });
 
-        return res.status(200).json({ order, products: orderProducts });
+        const cleanProducts = orderProducts.map(product => {
+            return {
+                id: product.id,
+                name: product.name,
+                category: product.category,
+                quantity: product.OrderItem.quantity,
+                priceAtTime: product.OrderItem.priceAtTime
+            };
+        });
+
+        return res.status(200).json({ order, products: cleanProducts });
         
     } catch (error) {
         console.error("Error getting orders: ", error);
