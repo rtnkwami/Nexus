@@ -1,0 +1,9 @@
+node_modules
+Dockerfile
+docker-compose.yml
+.dockerignore
+.qodo
+.vscode
+README.md
+api-code-overview.md
+mock-data.js
