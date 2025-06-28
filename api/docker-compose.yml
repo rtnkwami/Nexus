@@ -23,6 +23,9 @@ services:
     ports:
       - "5000:5000"
     restart: unless-stopped
+    depends_on:
+      - postgres
+    command: sh -c "sleep 5 && npm start"
 
 volumes:
   postgres_data:
