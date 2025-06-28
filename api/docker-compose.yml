@@ -12,12 +12,6 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 3s
-      timeout: 2s
-      retries: 10
-      start_period: 5s
 
   api:
     build:
@@ -28,9 +22,6 @@ services:
       - .env
     ports:
       - "5000:5000"
-    depends_on:
-      postgres:
-        condition: service_healthy
     restart: unless-stopped
 
 volumes:
