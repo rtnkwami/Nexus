@@ -1,12 +1,5 @@
 import ProductCard from "./ProductCard"
-
-type Product = {
-  id: string
-  name: string
-  imageUrl: string
-  price: number
-  description?: string
-}
+import { Product } from "@/types"
 
 export default function ProductList({ products }: { products: Product[] }) {
   return (

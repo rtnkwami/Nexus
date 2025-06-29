@@ -1,12 +1,5 @@
 import ProductList from "@/components/ProductList"
-
-type Product = {
-  id: string
-  name: string
-  imageUrl: string
-  price: number
-  description?: string
-}
+import { Product } from "@/types"
 
 type Pagination = {
   currentPage: number
