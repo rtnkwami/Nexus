@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { getAccessToken, useUser } from "@auth0/nextjs-auth0"
+import Cookies from "js-cookie"
 
 export function useUserSetup() {
   const { user } = useUser()
@@ -27,6 +28,13 @@ export function useUserSetup() {
             },
           }),
         })
+
+        const { userShop } = await res.json();
+        Cookies.set("shopId", userShop.id, {
+            path: "/",
+            expires: 1,
+            sameSite: "lax",
+        });
 
         if (!res.ok) {
           const msg = await res.text()
