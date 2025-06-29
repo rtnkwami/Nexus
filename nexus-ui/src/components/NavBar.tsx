@@ -14,18 +14,18 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
+import { useUserSetup } from "@/hooks/useUserSetup"
 
 export default function Navbar() {
-  const { user, isLoading } = useUser()
+  const { user, isLoading } = useUser();
+  useUserSetup();
 
   return (
     <nav className="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between border-b bg-white px-6">
-      {/* -------------- left -------------- */}
       <Link href="/" className="text-xl font-semibold">
         Nexus
       </Link>
 
-      {/* -------------- right -------------- */}
       {!isLoading &&
         (user ? (
           <DropdownMenu>
@@ -54,13 +54,21 @@ export default function Navbar() {
               <DropdownMenuSeparator />
 
               <DropdownMenuItem asChild>
-                <Link href="/dashboard">Dashboard</Link>
+                <Link href="/dashboard" className="cursor-pointer">
+                  Dashboard
+                </Link>
               </DropdownMenuItem>
+
               <DropdownMenuItem asChild>
-                <Link href="/shop">Shop Management</Link>
+                <Link href="/shop" className="cursor-pointer">
+                  Shop Management
+                </Link>
               </DropdownMenuItem>
+
               <DropdownMenuItem asChild>
-                <Link href="/account">Account</Link>
+                <Link href="/account" className="cursor-pointer">
+                  Account
+                </Link>
               </DropdownMenuItem>
 
               <DropdownMenuSeparator />
