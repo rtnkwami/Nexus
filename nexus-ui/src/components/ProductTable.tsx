@@ -17,7 +17,7 @@ export default function ProductTable({ products, onEdit, onDelete }: Props) {
       <table className="min-w-full text-sm text-left">
         <thead className="bg-muted text-muted-foreground">
           <tr>
-            <th className="px-4 py-3">Image</th>
+            {/* <th className="px-4 py-3">Image</th> */}
             <th className="px-4 py-3">Name</th>
             <th className="px-4 py-3">Price</th>
             <th className="px-4 py-3">Stock</th>

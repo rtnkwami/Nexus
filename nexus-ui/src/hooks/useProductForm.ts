@@ -19,9 +19,10 @@ export interface Product extends Omit<ProductFormData, 'price' | 'stock'> {
 
 interface UseProductFormOptions {
   mode: 'create' | 'update'
-  initialData?: Partial<ProductFormData>
   productId?: string
-  onSuccess?: () => void
+  initialData?: Partial<ProductFormData>
+  onSuccess?: (updated: Product) => void   // <‑‑ changed
+  title?: string
 }
 
 export function useProductForm({ 
@@ -109,8 +110,11 @@ export function useProductForm({
         throw new Error(`Failed to ${mode} product`)
       }
 
+      const json = await res.json()
+      const savedProduct = json.product
+
       if (onSuccess) {
-        onSuccess()
+        onSuccess(savedProduct)
       } else {
         router.push("/shop/products")
       }

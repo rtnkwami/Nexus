@@ -5,11 +5,17 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useProductForm, type ProductFormData } from "@/hooks/useProductForm"
 
+export interface Product extends Omit<ProductFormData, 'price' | 'stock'> {
+  id: string
+  price: number
+  stock: number
+}
+
 interface ProductFormProps {
   mode: 'create' | 'update'
   initialData?: Partial<ProductFormData>
   productId?: string
-  onSuccess?: () => void
+  onSuccess?: (updated: Product) => void  
   title?: string
 }
 

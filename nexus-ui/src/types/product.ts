@@ -5,4 +5,5 @@ export type Product = {
 //   imageUrl: string
   stock: number
   description?: string
+  category: string
 }
