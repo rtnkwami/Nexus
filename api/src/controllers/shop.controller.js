@@ -3,7 +3,7 @@ import Product from "../models/Product.js";
 import User from "../models/User.js";
 import Order from "../models/Order.js";
 import { removeUndefined } from "../utils/cleanInputs.js";
-import { Op } from "sequelize";
+import { fn, col, where, Op } from "sequelize";
 import { getUserShopId } from "../utils/getUserShop.js";
 
 export const updateShopMetadata =  async (req, res) => {
@@ -78,7 +78,7 @@ export const getShopProducts = async (req, res) => {
 
     try {
 
-        const shopId  = await getUserShopId(req);
+        const { shopId }  = req.params;
         const { category, minPrice, maxPrice, search } = req.query;
         const productQuery = { ShopId: shopId }
 
@@ -87,11 +87,19 @@ export const getShopProducts = async (req, res) => {
 
         if (category) { productQuery.category = category }
         if (minPrice && maxPrice) { productQuery.price = { [Op.between]: [min, max] } }
-        if (search) { productQuery.name = { [Op.like]: `%${ search }%` } }
+
+
+        const whereClause = { ...productQuery };
+
+        if (search) {
+            whereClause.name = {
+                [Op.iLike]: `%${search}%`,
+            };
+        }
 
 
         const { count, rows } = await Product.findAndCountAll({ 
-            where: productQuery,
+            where: whereClause,
             offset,
             limit
         });
