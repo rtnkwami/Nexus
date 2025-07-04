@@ -2,8 +2,6 @@
 
 // Import React hooks for state and effect management
 import { useEffect, useState } from "react"
-// Import Next.js Link for navigation
-import Link from "next/link"
 // Import the product table component for displaying products in a table
 import ProductTable from "@/components/ProductTable"
 // Import the custom hook to fetch products for the current shop
@@ -25,6 +23,7 @@ import {
  * - Fetches products for the current shop using a custom hook.
  * - Maintains local state for products and the currently edited product.
  * - Handles editing and updating products via a modal form.
+ * - Handles creating new products via the same modal form.
  */
 export default function ProductInventory() {
   // Fetch products, loading, and error state from the custom hook
@@ -38,6 +37,8 @@ export default function ProductInventory() {
   const [products, setProducts] = useState<Product[]>([])
   // Local state for the product currently being edited (null if none)
   const [editProduct, setEditProduct] = useState<Product | null>(null)
+  // Local state to track if the modal is open for creating a new product
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   // Keep local products state in sync with fetched products from the server
   useEffect(() => {
@@ -55,6 +56,11 @@ export default function ProductInventory() {
     if (product) setEditProduct(product)
   }
 
+  // Handler to open the create modal
+  const handleCreate = () => {
+    setIsCreateModalOpen(true)
+  }
+
   // Handler to update a product in local state after a successful update
   const handleProductUpdate = (updated: Product) => {
     // Replace the updated product in the local products array
@@ -65,9 +71,28 @@ export default function ProductInventory() {
     setEditProduct(null)
   }
 
+  // Handler to add a new product to local state after successful creation
+  const handleProductCreate = (newProduct: Product) => {
+    // Add the new product to the local products array
+    setProducts((prev) => [...prev, newProduct])
+    // Close the create modal
+    setIsCreateModalOpen(false)
+  }
+
+  // Handler to close any open modal
+  const handleCloseModal = () => {
+    setEditProduct(null)
+    setIsCreateModalOpen(false)
+  }
+
   // Show loading or error states if needed
   if (loading) return <p>Loading…</p>
   if (error)   return <p className="text-red-500">Error loading products</p>
+
+  // Determine modal state and content
+  const isModalOpen = !!editProduct || isCreateModalOpen
+  const isEditMode = !!editProduct
+  const modalTitle = isEditMode ? "Update Product" : "Create New Product"
 
   // Render the product inventory UI
   return (
@@ -76,11 +101,12 @@ export default function ProductInventory() {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold">Product Inventory</h2>
 
-        <Link href="/shop/products/create">
-          <button className="px-4 py-2 text-sm bg-primary text-white rounded-md hover:bg-primary/90">
-            + Add Product
-          </button>
-        </Link>
+        <button 
+          onClick={handleCreate}
+          className="px-4 py-2 text-sm bg-primary text-white rounded-md hover:bg-primary/90"
+        >
+          + Add Product
+        </button>
       </div>
 
       {/* Product table listing all products with edit/delete actions */}
@@ -90,17 +116,17 @@ export default function ProductInventory() {
         onDelete={(id) => console.log("delete", id)}
       />
 
-      {/* Modal dialog for editing a product */}
+      {/* Modal dialog for editing or creating a product */}
       <Dialog
-        open={!!editProduct}
-        onOpenChange={() => setEditProduct(null)}
+        open={isModalOpen}
+        onOpenChange={handleCloseModal}
       >
         <DialogContent className="max-w-xl">
           <DialogHeader>
-            <DialogTitle>Update Product</DialogTitle>
+            <DialogTitle>{modalTitle}</DialogTitle>
           </DialogHeader>
 
-          {/* Render the product form if a product is being edited */}
+          {/* Render the product form for editing */}
           {editProduct && (
             <ProductForm
               mode="update"
@@ -113,6 +139,14 @@ export default function ProductInventory() {
                 category:    editProduct.category,
               }}
               onSuccess={handleProductUpdate}
+            />
+          )}
+
+          {/* Render the product form for creating */}
+          {isCreateModalOpen && (
+            <ProductForm
+              mode="create"
+              onSuccess={handleProductCreate}
             />
           )}
         </DialogContent>
