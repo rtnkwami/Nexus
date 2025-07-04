@@ -23,6 +23,31 @@ import {
 } from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
+import { getAccessToken } from "@auth0/nextjs-auth0"
+
+export const deleteProduct = async (productId: string) => {
+  try {
+    const token = await getAccessToken();
+
+    const response = await fetch(`http://localhost:5000/shops/products/${productId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete product: ${response.statusText}`)
+    }
+
+    return true
+  } catch (error) {
+    console.error('Error deleting product:', error)
+    throw error
+  }
+}
+
 /**
  * ProductInventory component manages the product inventory page.
  * - Fetches products for the current shop using a custom hook.
@@ -57,6 +82,12 @@ export default function ProductInventory() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   // State to track if we're showing search results or all products
   const [showingSearchResults, setShowingSearchResults] = useState(false)
+
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+  isOpen: boolean
+  productId: string
+  productName: string
+} | null>(null)
 
   // Keep local products state in sync with fetched products from the server
   useEffect(() => {
@@ -127,6 +158,31 @@ export default function ProductInventory() {
     setEditProduct(null)
     setIsCreateModalOpen(false)
   }
+
+  const handleDeleteClick = (id: string) => {
+    const product = products.find((p) => p.id === id)
+    if (product) {
+      setDeleteConfirm({ isOpen: true, productId: id, productName: product.name })
+    }
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirm) return
+    try {
+      await deleteProduct(deleteConfirm.productId)
+      setProducts((prev) =>
+        prev.filter((p) => p.id !== deleteConfirm.productId)
+      )
+      // toast.success("Product deleted")   // optional
+    } catch (err) {
+      console.error(err)
+      // toast.error("Delete failed")       // optional
+    } finally {
+      setDeleteConfirm(null)
+    }
+  }
+
+  const handleDeleteCancel = () => setDeleteConfirm(null)
 
   // Show loading or error states if needed
   if (loading) return <p>Loading…</p>
@@ -200,7 +256,7 @@ export default function ProductInventory() {
       <ProductTable
         products={products}
         onEdit={handleEdit}
-        onDelete={(id) => console.log("delete", id)}
+        onDelete={handleDeleteClick}
       />
 
       {/* Empty state for no products */}
@@ -247,6 +303,36 @@ export default function ProductInventory() {
           )}
         </DialogContent>
       </Dialog>
+
+      {deleteConfirm && (
+        <Dialog open onOpenChange={handleDeleteCancel}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Delete Product</DialogTitle>
+            </DialogHeader>
+
+            <p className="text-sm text-gray-600">
+              Are you sure you want to delete “{deleteConfirm.productName}”? This
+              action cannot be undone.
+            </p>
+
+            <div className="flex justify-end gap-2 pt-4">
+              <button
+                onClick={handleDeleteCancel}
+                className="px-4 py-2 text-sm border rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   )
 }
