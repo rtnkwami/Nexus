@@ -10,6 +10,10 @@ import { useShopProducts } from "@/hooks/useShopProducts"
 import { Product } from "@/types"
 // Import the product form for creating/updating products
 import { ProductForm } from "@/components/ProductForm"
+// Import the search component
+import ProductSearch, { SearchFilters } from "@/components/ProductSearch"
+// Import the search hook
+import { useProductSearch } from "@/hooks/useProductSearch"
 // Import dialog components for modal UI
 import {
   Dialog,
@@ -17,6 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 /**
  * ProductInventory component manages the product inventory page.
@@ -24,8 +29,9 @@ import {
  * - Maintains local state for products and the currently edited product.
  * - Handles editing and updating products via a modal form.
  * - Handles creating new products via the same modal form.
+ * - Provides search functionality with basic and advanced filters.
  */
-export default function ProductInventory() {
+export default function ProductInventory() {  
   // Fetch products, loading, and error state from the custom hook
   const {
     products: fetchedProducts,
@@ -33,20 +39,57 @@ export default function ProductInventory() {
     error,
   } = useShopProducts()
 
+  // Search functionality
+  const {
+    searchResults,
+    pagination,
+    isSearching,
+    searchError,
+    searchProducts,
+    clearSearch
+  } = useProductSearch()
+
   // Local state for the list of products (to allow local updates after edits)
   const [products, setProducts] = useState<Product[]>([])
   // Local state for the product currently being edited (null if none)
   const [editProduct, setEditProduct] = useState<Product | null>(null)
   // Local state to track if the modal is open for creating a new product
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  // State to track if we're showing search results or all products
+  const [showingSearchResults, setShowingSearchResults] = useState(false)
 
   // Keep local products state in sync with fetched products from the server
   useEffect(() => {
-    // Only update if fetchedProducts is non-empty
-    if (fetchedProducts.length) {
+    // Only update if fetchedProducts is non-empty and we're not showing search results
+    if (fetchedProducts.length && !showingSearchResults) {
       setProducts(fetchedProducts)
     }
-  }, [fetchedProducts])
+  }, [fetchedProducts, showingSearchResults])
+
+  // Handle search
+  const handleSearch = async (filters: SearchFilters) => {
+    if (filters.searchTerm.trim() || filters.minPrice || filters.maxPrice || filters.category) {
+      await searchProducts(filters)
+      setShowingSearchResults(true)
+    } else {
+      // If no search criteria, show all products
+      handleClearSearch()
+    }
+  }
+
+  // Handle clearing search
+  const handleClearSearch = () => {
+    clearSearch()
+    setShowingSearchResults(false)
+    setProducts(fetchedProducts)
+  }
+
+  // Update products when search results change
+  useEffect(() => {
+    if (showingSearchResults) {
+      setProducts(searchResults)
+    }
+  }, [searchResults, showingSearchResults])
 
   // Handler to open the edit modal for a specific product by id
   const handleEdit = (id: string) => {
@@ -87,16 +130,19 @@ export default function ProductInventory() {
 
   // Show loading or error states if needed
   if (loading) return <p>Loading…</p>
-  if (error)   return <p className="text-red-500">Error loading products</p>
+  if (error) return <p className="text-red-500">Error loading products</p>
 
   // Determine modal state and content
   const isModalOpen = !!editProduct || isCreateModalOpen
   const isEditMode = !!editProduct
   const modalTitle = isEditMode ? "Update Product" : "Create New Product"
 
+  // Extract unique categories from products for the search filter
+  const categories = [...new Set(fetchedProducts.map(p => p.category))].filter(Boolean)
+
   // Render the product inventory UI
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header with title and add product button */}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold">Product Inventory</h2>
@@ -109,12 +155,62 @@ export default function ProductInventory() {
         </button>
       </div>
 
+      {/* Search Component */}
+      <ProductSearch
+        onSearch={handleSearch}
+        isLoading={isSearching}
+        categories={categories}
+        placeholder="Search products by name, description..."
+      />
+
+      {/* Search Error Alert */}
+      {searchError && (
+        <Alert variant="destructive">
+          <AlertDescription>{searchError}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* Search Results Info */}
+      {showingSearchResults && (
+        <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <span className="text-sm text-blue-800">
+            {pagination ? (
+              <>
+                Showing {products.length} of {pagination.totalProducts} result{pagination.totalProducts !== 1 ? 's' : ''}
+                {pagination.totalPages > 1 && (
+                  <span className="ml-2 text-blue-600">
+                    (Page {pagination.currentPage} of {pagination.totalPages})
+                  </span>
+                )}
+              </>
+            ) : (
+              <>Showing {products.length} search result{products.length !== 1 ? 's' : ''}</>
+            )}
+          </span>
+          <button
+            onClick={handleClearSearch}
+            className="text-sm text-blue-600 hover:text-blue-800 underline"
+          >
+            Show all products
+          </button>
+        </div>
+      )}
+
       {/* Product table listing all products with edit/delete actions */}
       <ProductTable
         products={products}
         onEdit={handleEdit}
         onDelete={(id) => console.log("delete", id)}
       />
+
+      {/* Empty state for no products */}
+      {products.length === 0 && !isSearching && (
+        <div className="text-center py-12">
+          <p className="text-gray-500">
+            {showingSearchResults ? "No products found matching your search." : "No products found."}
+          </p>
+        </div>
+      )}
 
       {/* Modal dialog for editing or creating a product */}
       <Dialog
