@@ -73,7 +73,7 @@ export const createShopProduct = async (req, res) => {
 
 export const getShopProducts = async (req, res) => {    
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 30;
+    const limit = parseInt(req.query.limit) || 20;
     const  offset = (page - 1) * limit;
 
     try {
@@ -141,16 +141,17 @@ export const getOneShopProduct = async (req, res) => {
 }
 
 export const updateShopProduct = async (req, res) => {
-    const { name, description, category, price, stock } = req.body.product;
+    const productBody = req.body.product;
+    console.log(productBody)
     const { productId } = req.params;
 
-    const productUpdate = removeUndefined({ 
-        name,
-        description,
-        category,
-        price,
-        stock
-     });
+    const productUpdate = {}
+
+    if (productBody.name) { productUpdate.name = productBody.name }
+    if (productBody.description) { productUpdate.description = productBody.description }
+    if (productBody.category) { productUpdate.category = productBody.category }
+    if (productBody.price) { productUpdate.price = productBody.price }
+    if (productBody.stock) { productUpdate.stock = productBody.stock }
 
     try {
         const product = await Product.findByPk(productId);

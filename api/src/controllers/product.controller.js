@@ -1,4 +1,5 @@
 import Product from "../models/Product.js";
+import { fn, col, where, Op } from "sequelize";
 
 export const getAllProducts = async (req, res) => {    
     const page = parseInt(req.query.page) || 1;
@@ -55,20 +56,19 @@ export const getOneProduct = async (req, res) => {
 }
 
 export const getProductCategories = async (req, res) => {
-    try {
-        const categories = await Product.findAll({
-            attributes: ['category'],
-            group: 'category'
-        });
-        if (!categories || categories.length === 0) {
-            return res.status(404).json({ message: "No categories found" });
-        }
+  try {
+    const categories = await Product.findAll({
+      attributes: [[fn('DISTINCT', col('category')), 'category']],
+    });
 
-        res.status(200).json({ categories: categories.map(cat => cat.category) });
-
-
-    } catch (error) {
-        console.error("Error getting product categories: ", error);
-        res.status(500).json({ message: "Internal server error" });
+    if (!categories || categories.length === 0) {
+      return res.status(404).json({ message: "No categories found" });
     }
-}
+
+    res.status(200).json({ categories: categories.map(cat => cat.get('category')) });
+
+  } catch (error) {
+    console.error("Error getting product categories: ", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
