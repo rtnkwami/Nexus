@@ -86,7 +86,11 @@ export const getShopProducts = async (req, res) => {
         const max = Number(maxPrice);
 
         if (category) { productQuery.category = category }
-        if (minPrice && maxPrice) { productQuery.price = { [Op.between]: [min, max] } }
+        if (minPrice || maxPrice) {
+            productQuery.price = {};
+            if (minPrice) { productQuery.price[Op.gte] = min }
+            if (maxPrice) { productQuery.price[Op.lte] = max }
+        }
 
 
         const whereClause = { ...productQuery };
