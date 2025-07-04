@@ -1,3 +1,6 @@
+// This file defines the main navigation bar for the application.
+// It displays the app logo, user authentication state, and a user menu with navigation links.
+
 "use client"
 import { useUser } from "@auth0/nextjs-auth0"
 import Link from "next/link"
@@ -16,19 +19,31 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useUserSetup } from "@/hooks/useUserSetup"
 
+/**
+ * Navbar component renders the top navigation bar.
+ * - Shows the app logo and name.
+ * - Displays user avatar and dropdown menu if authenticated.
+ * - Shows a sign-in button if not authenticated.
+ * - Uses Auth0 for authentication state.
+ */
 export default function Navbar() {
-  const { user, isLoading } = useUser();
-  useUserSetup();
+  // Get the current user and loading state from Auth0
+  const { user, isLoading } = useUser()
+  // Run user setup logic (e.g., ensure user exists in backend)
+  useUserSetup()
 
   return (
     <nav className="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between border-b bg-white px-6">
+      {/* App logo and home link */}
       <Link href="/" className="text-xl font-semibold">
         Nexus
       </Link>
 
+      {/* Show user menu if authenticated, otherwise show sign-in button */}
       {!isLoading &&
         (user ? (
           <DropdownMenu>
+            {/* Avatar triggers the dropdown menu */}
             <DropdownMenuTrigger asChild>
               <Avatar className="h-9 w-9 cursor-pointer">
                 <AvatarImage src={user.picture ?? ""} />
@@ -37,7 +52,7 @@ export default function Navbar() {
             </DropdownMenuTrigger>
 
             <DropdownMenuContent className="w-56" align="end">
-              {/* user info */}
+              {/* User info section in dropdown */}
               <div className="flex items-center gap-3 px-3 py-2">
                 <Avatar className="h-10 w-10">
                   <AvatarImage src={user.picture ?? ""} />
@@ -53,6 +68,7 @@ export default function Navbar() {
 
               <DropdownMenuSeparator />
 
+              {/* Navigation links in dropdown */}
               <DropdownMenuItem asChild>
                 <Link href="/dashboard" className="cursor-pointer">
                   Dashboard
@@ -73,6 +89,7 @@ export default function Navbar() {
 
               <DropdownMenuSeparator />
 
+              {/* Sign out link */}
               <DropdownMenuItem asChild>
                 <a
                   href="/auth/logout"
@@ -84,6 +101,7 @@ export default function Navbar() {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
+          // Show sign-in button if not authenticated
           <Button asChild variant="outline">
             <a href="/auth/login">Sign In</a>
           </Button>
