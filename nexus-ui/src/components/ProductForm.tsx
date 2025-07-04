@@ -1,7 +1,6 @@
 import React from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useProductForm, type ProductFormData } from "@/hooks/useProductForm"
 
@@ -50,13 +49,6 @@ export function ProductForm({
             required
             disabled={isLoading}
           />
-          <Textarea
-            name="description"
-            placeholder="Description"
-            value={form.description}
-            onChange={handleChange}
-            disabled={isLoading}
-          />
           <Input
             name="price"
             placeholder="Price"
@@ -86,13 +78,6 @@ export function ProductForm({
             required
             disabled={isLoading}
           />
-          {/* <Input
-            name="imageUrl"
-            placeholder="Image URL (optional)"
-            value={form.imageUrl}
-            onChange={handleChange}
-            disabled={isLoading}
-          /> */}
           <Button 
             type="submit" 
             className="w-full" 
