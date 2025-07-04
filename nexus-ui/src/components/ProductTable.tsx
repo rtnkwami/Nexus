@@ -2,6 +2,7 @@
 
 import { Pencil, Trash } from "lucide-react"
 // import Image from "next/image"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Product } from "@/types"
 
@@ -28,7 +29,11 @@ export default function ProductTable({ products, onEdit, onDelete }: Props) {
         <tbody>
           {products.map((product) => (
             <tr key={product.id} className="border-t">
-              <td className="px-4 py-2 font-medium">{product.name}</td>
+              <td className="px-4 py-2 font-medium">
+                <Link href={`/shop/products/${product.id}`} className="text-blue-600 hover:underline">
+                  {product.name}
+                </Link>
+                </td>
               <td className="px-4 py-2">${product.price.toFixed(2)}</td>
               <td className="px-4 py-2 font-medium">{product.category}</td>
               <td className="px-4 py-2">{product.stock}</td>
