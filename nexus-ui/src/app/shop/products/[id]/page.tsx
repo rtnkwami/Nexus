@@ -54,7 +54,8 @@ const ProductDetailPage = () => {
     removeImage,
     selectImage,
     uploadPendingImages,
-} = useImageUpload(loadedImages);
+    updateRemoteUrls, // 🔸 NEW: Get the update method
+  } = useImageUpload(loadedImages);
 
   const {
     categories,
@@ -63,28 +64,34 @@ const ProductDetailPage = () => {
   } = useCategories();
 
   useEffect(() => {
-  (async () => {
-    try {
-      const res = await fetch(`http://localhost:5000/shops/products/${productId}`);
-      if (!res.ok) throw new Error(`Status ${res.status}`);
-      const { product } = await res.json();
+    (async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/shops/products/${productId}`);
+        if (!res.ok) throw new Error(`Status ${res.status}`);
+        const { product } = await res.json();
 
-      setFormData({
-        name: product.name ?? "",
-        price: product.price?.toString() ?? "",
-        stock: product.stock?.toString() ?? "",
-        category: product.category ?? "",
-        images: product.images ?? [],
-      });
-      setDescription(product.description ?? "");
-      setLoadedImages(product.images ?? []); // ✅ load images
-      setLoading(false);
-    } catch (err: any) {
-      setError(`Could not load product: ${err.message}`);
-      setLoading(false);
-    }
-  })();
-}, [productId]);
+        const productImages = product.images ?? [];
+        
+        setFormData({
+          name: product.name ?? "",
+          price: product.price?.toString() ?? "",
+          stock: product.stock?.toString() ?? "",
+          category: product.category ?? "",
+          images: productImages,
+        });
+        setDescription(product.description ?? "");
+        setLoadedImages(productImages);
+        
+        // 🔸 NEW: Update the hook with loaded images
+        updateRemoteUrls(productImages);
+        
+        setLoading(false);
+      } catch (err: any) {
+        setError(`Could not load product: ${err.message}`);
+        setLoading(false);
+      }
+    })();
+  }, [productId, updateRemoteUrls]);
 
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -126,6 +133,10 @@ const ProductDetailPage = () => {
 
       if (!res.ok) throw new Error(`Status ${res.status}`);
       alert("Product updated successfully!");
+      
+      // 🔸 Update the form data with the new images
+      setFormData(prev => ({ ...prev, images: finalImages }));
+      
     } catch (err: any) {
       alert(`Failed to update product: ${err.message}`);
     } finally {
@@ -148,7 +159,7 @@ const ProductDetailPage = () => {
           {/* images */}
           <div className="space-y-6">
             <ImageDisplay
-              images={images || null}
+              images={images}
               selectedImageIndex={selectedImageIndex}
               onSelectImage={selectImage}
               onRemoveImage={removeImage}

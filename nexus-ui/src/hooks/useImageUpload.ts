@@ -1,5 +1,5 @@
 // src/hooks/useImageUpload.ts
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 type LocalImage = {
   preview: string;   // blob: URL for instant thumbnail
@@ -11,6 +11,11 @@ export const useImageUpload = (initialUrls: RemoteUrl[] = []) => {
   /** 🔸 We keep two separate buckets */
   const [remoteUrls, setRemoteUrls]   = useState<RemoteUrl[]>(initialUrls); // already on server
   const [localImgs,  setLocalImgs]    = useState<LocalImage[]>([]);         // new, not uploaded
+
+  // 🔸 NEW: Update remoteUrls when initialUrls changes
+  useEffect(() => {
+    setRemoteUrls(initialUrls);
+  }, [initialUrls]);
 
   const allImages = [...remoteUrls, ...localImgs.map(l => l.preview)]; // for <ImageDisplay/>
 
@@ -28,7 +33,7 @@ export const useImageUpload = (initialUrls: RemoteUrl[] = []) => {
   }, []);
 
   const removeImage = useCallback((index: number) => {
-    /** 🔸 Decide if we’re removing an existing url or a local file */
+    /** 🔸 Decide if we're removing an existing url or a local file */
     if (index < remoteUrls.length) {
       setRemoteUrls(prev => prev.filter((_, i) => i !== index));
     } else {
@@ -43,7 +48,7 @@ export const useImageUpload = (initialUrls: RemoteUrl[] = []) => {
   const handleDragLeave = useCallback((e: React.DragEvent) => { e.preventDefault(); setDragOver(false);},[]);
   const handleDrop      = useCallback((e: React.DragEvent) => { e.preventDefault(); setDragOver(false); handleImageUpload(e.dataTransfer.files);},[handleImageUpload]);
 
-  /** 🔸 NEW: uploadPendingImages, called from “Save” */
+  /** 🔸 NEW: uploadPendingImages, called from "Save" */
   const uploadPendingImages = useCallback(async (): Promise<RemoteUrl[]> => {
     if (!localImgs.length) return remoteUrls;               // nothing new
 
@@ -67,6 +72,11 @@ export const useImageUpload = (initialUrls: RemoteUrl[] = []) => {
     return [...remoteUrls, ...uploaded];
   }, [localImgs, remoteUrls]);
 
+  // 🔸 NEW: Method to manually update remote URLs (useful for external updates)
+  const updateRemoteUrls = useCallback((urls: RemoteUrl[]) => {
+    setRemoteUrls(urls);
+  }, []);
+
   return {
     images: allImages,              // for <ImageDisplay/>
     selectedImageIndex: selected,
@@ -79,5 +89,6 @@ export const useImageUpload = (initialUrls: RemoteUrl[] = []) => {
     selectImage: setSelected,
     /** 🔸 expose for ProductDetailPage */
     uploadPendingImages,
+    updateRemoteUrls,               // 🔸 NEW: expose this method
   };
 };
