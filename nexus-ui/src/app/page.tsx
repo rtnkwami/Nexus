@@ -37,6 +37,7 @@ async function getProducts(): Promise<ProductResponse> {
 export default async function Home() {
   // Fetch product data from the backend API
   const data = await getProducts();
+  console.log("Products", data.products)
   const products = data.products;
 
   // Render the main content area with a title and the product list
