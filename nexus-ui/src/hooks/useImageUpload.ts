@@ -77,6 +77,21 @@ export const useImageUpload = (initialUrls: RemoteUrl[] = []) => {
     setRemoteUrls(urls);
   }, []);
 
+  const setImageAsDisplay = useCallback((index: number) => {
+    if (index === 0) return; // already display image
+
+    if (index < remoteUrls.length) {
+      const url = remoteUrls[index];
+      setRemoteUrls(prev => [url, ...prev.filter((_, i) => i !== index)]);
+    } else {
+      const localIdx = index - remoteUrls.length;
+      const local = localImgs[localIdx];
+      setLocalImgs(prev => [local, ...prev.filter((_, i) => i !== localIdx)]);
+    }
+
+    setSelected(0);
+  }, [remoteUrls, localImgs]);
+
   return {
     images: allImages,              // for <ImageDisplay/>
     selectedImageIndex: selected,
@@ -90,5 +105,6 @@ export const useImageUpload = (initialUrls: RemoteUrl[] = []) => {
     /** 🔸 expose for ProductDetailPage */
     uploadPendingImages,
     updateRemoteUrls,               // 🔸 NEW: expose this method
+    setImageAsDisplay,
   };
 };

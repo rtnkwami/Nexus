@@ -54,7 +54,8 @@ const ProductDetailPage = () => {
     removeImage,
     selectImage,
     uploadPendingImages,
-    updateRemoteUrls, // 🔸 NEW: Get the update method
+    updateRemoteUrls,
+    setImageAsDisplay,
   } = useImageUpload(loadedImages);
 
   const {
@@ -163,6 +164,7 @@ const ProductDetailPage = () => {
               selectedImageIndex={selectedImageIndex}
               onSelectImage={selectImage}
               onRemoveImage={removeImage}
+              onSetAsDisplayImage={setImageAsDisplay}
             />
             <ImageUpload
               dragOver={dragOver}
