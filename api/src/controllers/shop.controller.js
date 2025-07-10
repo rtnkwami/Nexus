@@ -105,7 +105,8 @@ export const getShopProducts = async (req, res) => {
         const { count, rows } = await Product.findAndCountAll({ 
             where: whereClause,
             offset,
-            limit
+            limit,
+            order: [['updatedAt', 'DESC']]
         });
 
         res.status(200).json({
@@ -142,8 +143,9 @@ export const getOneShopProduct = async (req, res) => {
 
 export const updateShopProduct = async (req, res) => {
     const productBody = req.body.product;
-    console.log(productBody)
+    const productImages = req.body.images;
     const { productId } = req.params;
+    console.log(req.body.images)
 
     const productUpdate = {}
 
@@ -152,6 +154,7 @@ export const updateShopProduct = async (req, res) => {
     if (productBody.category) { productUpdate.category = productBody.category }
     if (productBody.price) { productUpdate.price = productBody.price }
     if (productBody.stock) { productUpdate.stock = productBody.stock }
+    if (productImages) { productUpdate.images = productImages }
 
     try {
         const product = await Product.findByPk(productId);

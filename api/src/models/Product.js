@@ -35,6 +35,11 @@ const Product = sequelize.define('Product',
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0
+        },
+        images: {
+            type: DataTypes.ARRAY(DataTypes.STRING),
+            allowNull: false,
+            defaultValue: []
         }
     },
     {
