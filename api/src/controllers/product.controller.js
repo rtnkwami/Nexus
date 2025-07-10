@@ -20,7 +20,8 @@ export const getAllProducts = async (req, res) => {
         const { count, rows } = await Product.findAndCountAll({ 
             where: productQuery,
             offset,
-            limit
+            limit,
+            order: [['updatedAt', 'DESC']]
         });
 
         res.status(200).json({
