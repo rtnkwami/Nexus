@@ -1,10 +1,16 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { Product } from '@/types/product';
+import { useCart } from '@/contexts/CartContext';
+import { Button } from '@/components/ui/button';
 
 const ProductView = ({ productId }: { productId: string }) => {
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [quantity, setQuantity] = useState(1);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  
+  const { addToCart } = useCart();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -22,6 +28,22 @@ const ProductView = ({ productId }: { productId: string }) => {
 
     fetchProduct();
   }, [productId]);
+
+  const handleAddToCart = async () => {
+    if (!product) return;
+    
+    setIsAddingToCart(true);
+    try {
+      await addToCart(product.id, quantity);
+      // Optionally show success message
+      console.log('Product added to cart successfully');
+    } catch (error) {
+      console.error('Failed to add product to cart:', error);
+      // Optionally show error message
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
 
   if (!product) return <p>Loading...</p>;
 
@@ -81,17 +103,24 @@ const ProductView = ({ productId }: { productId: string }) => {
         <div className="flex items-center space-x-4 mt-4">
           <input
             type="number"
-            defaultValue={1}
+            value={quantity}
+            onChange={(e) => setQuantity(Math.max(1, Math.min(product.stock, parseInt(e.target.value) || 1)))}
             min={1}
             max={product.stock}
             className="w-16 border rounded px-2 py-1"
           />
-          <button className="bg-black hover:bg-gray-700 text-white font-medium px-5 py-2 rounded">
-            Add to cart
-          </button>
+          <Button
+            onClick={handleAddToCart}
+            disabled={isAddingToCart || product.stock === 0}
+            className="bg-black hover:bg-gray-700 text-white font-medium px-5 py-2 rounded"
+          >
+            {isAddingToCart ? 'Adding...' : 'Add to cart'}
+          </Button>
         </div>
 
-        <p className="text-sm text-gray-500">In stock: {product.stock}</p>
+        <p className="text-sm text-gray-500">
+          {product.stock > 0 ? `In stock: ${product.stock}` : 'Out of stock'}
+        </p>
 
         <div className="mt-6 border-t pt-4">
           <p className="text-gray-700 font-medium">Guaranteed Safe Checkout</p>
