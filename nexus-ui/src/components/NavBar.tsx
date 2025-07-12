@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useUserSetup } from "@/hooks/useUserSetup"
 import NavbarProductSearch from "@/components/NavBarProductSearch"
+import CartDrawer from "@/components/CartDrawer"
 
 /**
  * Navbar component renders the top navigation bar.
@@ -26,6 +27,7 @@ import NavbarProductSearch from "@/components/NavBarProductSearch"
  * - Displays user avatar and dropdown menu if authenticated.
  * - Shows a sign-in button if not authenticated.
  * - Includes a product search bar in the center.
+ * - Includes a cart drawer button.
  * - Uses Auth0 for authentication state.
  */
 export default function Navbar() {
@@ -46,8 +48,12 @@ export default function Navbar() {
         <NavbarProductSearch placeholder="Search products..." />
       </div>
 
-      {/* Show user menu if authenticated, otherwise show sign-in button */}
-      <div className="flex-shrink-0">
+      {/* Right side: Cart and User menu */}
+      <div className="flex items-center space-x-4 flex-shrink-0">
+        {/* Cart drawer button */}
+        <CartDrawer />
+
+        {/* Show user menu if authenticated, otherwise show sign-in button */}
         {!isLoading &&
           (user ? (
             <DropdownMenu>
