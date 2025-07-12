@@ -22,9 +22,12 @@ export interface SearchFilters {
 // Interface for component props
 interface ProductSearchProps {
   onSearch: (filters: SearchFilters) => void
+  onClearSearch?: () => void  // Optional callback for clearing search
   isLoading?: boolean
   placeholder?: string
   categories?: string[]
+  showClearButton?: boolean  // Whether to show the clear search button
+  hasActiveSearch?: boolean  // Whether there's an active search
 }
 
 /**
@@ -33,9 +36,12 @@ interface ProductSearchProps {
  */
 export default function ProductSearch({
   onSearch,
+  onClearSearch,
   isLoading = false,
   placeholder = "Search products...",
-  categories = []
+  categories = [],
+  showClearButton = false,
+  hasActiveSearch = false
 }: ProductSearchProps) {
   // State for search filters
   const [searchTerm, setSearchTerm] = useState("")
@@ -66,7 +72,24 @@ export default function ProductSearch({
     handleBasicSearch()
   }
 
-  // Clear all filters
+  // Clear all filters and reset search
+  const handleClearAll = () => {
+    setSearchTerm("")
+    setMinPrice("")
+    setMaxPrice("")
+    setCategory("")
+    setIsAdvancedOpen(false)
+    
+    // Call parent's clear search function if provided
+    if (onClearSearch) {
+      onClearSearch()
+    } else {
+      // Fallback: trigger search with empty filters
+      onSearch({ searchTerm: "" })
+    }
+  }
+
+  // Clear just the local filter inputs (for advanced search form)
   const handleClearFilters = () => {
     setSearchTerm("")
     setMinPrice("")
@@ -75,7 +98,8 @@ export default function ProductSearch({
     onSearch({ searchTerm: "" })
   }
 
-  // Check if any advanced filters are active
+  // Check if any filters are active
+  const hasLocalFilters = searchTerm || minPrice || maxPrice || category
   const hasAdvancedFilters = minPrice || maxPrice || category
 
   return (
@@ -103,6 +127,20 @@ export default function ProductSearch({
           >
             {isLoading ? "Searching..." : "Search"}
           </Button>
+          
+          {/* Clear search button - shows when there are active filters or active search */}
+          {(showClearButton || hasActiveSearch || hasLocalFilters) && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleClearAll}
+              className="px-3 text-gray-600 hover:text-gray-800"
+              disabled={isLoading}
+            >
+              <X className="h-4 w-4 mr-1" />
+              Clear
+            </Button>
+          )}
           
           <CollapsibleTrigger asChild>
             <Button
@@ -134,7 +172,7 @@ export default function ProductSearch({
                   className="text-sm text-gray-500 hover:text-gray-700"
                 >
                   <X className="h-3 w-3 mr-1" />
-                  Clear All
+                  Clear Filters
                 </Button>
               )}
             </div>

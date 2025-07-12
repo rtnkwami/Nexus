@@ -60,9 +60,12 @@ export default function ProductInventoryPage() {
       {/* Search Component */}
       <ProductSearch
         onSearch={handleSearch}
+        onClearSearch={handleClearSearch}
         isLoading={isSearching}
         categories={categories}
         placeholder="Search products by name, description..."
+        hasActiveSearch={showingSearchResults}
+        showClearButton={showingSearchResults}
       />
 
       {/* Search Error Alert */}
@@ -158,7 +161,7 @@ export default function ProductInventoryPage() {
             </DialogHeader>
 
             <p className="text-sm text-gray-600">
-              Are you sure you want to delete “{deleteConfirm.productName}”? This
+              Are you sure you want to delete &quot;{deleteConfirm.productName}&quot;? This
               action cannot be undone.
             </p>
 
