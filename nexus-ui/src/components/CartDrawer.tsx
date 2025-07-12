@@ -62,7 +62,13 @@ export default function CartDrawer() {
                 {cart.map((item) => (
                   <div key={item.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                     <div className="flex-1">
-                      <h3 className="font-medium text-sm">{item.name}</h3>
+                      <Link 
+                        href={`/products/${item.id}`}
+                        onClick={() => setIsOpen(false)}
+                        className="block hover:text-blue-600 transition-colors"
+                      >
+                        <h3 className="font-medium text-sm cursor-pointer">{item.name}</h3>
+                      </Link>
                       <p className="text-sm text-gray-600">${item.price.toFixed(2)}</p>
                     </div>
                     
