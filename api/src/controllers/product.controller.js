@@ -3,7 +3,7 @@ import { fn, col, where, Op } from "sequelize";
 
 export const getAllProducts = async (req, res) => {    
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 30;
+    const limit = parseInt(req.query.limit) || 20;
     const  offset = (page - 1) * limit;
 
     try {
@@ -14,11 +14,24 @@ export const getAllProducts = async (req, res) => {
         const max = Number(maxPrice);
 
         if (category) { productQuery.category = category }
-        if (minPrice && maxPrice) { productQuery.price = { [Op.between]: [min, max] } }
-        if (search) { productQuery.name = { [Op.like]: `%${ search }%` } }
+        if (minPrice || maxPrice) {
+            productQuery.price = {};
+            if (minPrice) { productQuery.price[Op.gte] = min }
+            if (maxPrice) { productQuery.price[Op.lte] = max }
+        }
+
+
+        const whereClause = { ...productQuery };
+
+        if (search) {
+            whereClause.name = {
+                [Op.iLike]: `%${search}%`,
+            };
+        }
+
 
         const { count, rows } = await Product.findAndCountAll({ 
-            where: productQuery,
+            where: whereClause,
             offset,
             limit,
             order: [['updatedAt', 'DESC']]
