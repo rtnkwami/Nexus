@@ -18,12 +18,14 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { useUserSetup } from "@/hooks/useUserSetup"
+import NavbarProductSearch from "@/components/NavBarProductSearch"
 
 /**
  * Navbar component renders the top navigation bar.
  * - Shows the app logo and name.
  * - Displays user avatar and dropdown menu if authenticated.
  * - Shows a sign-in button if not authenticated.
+ * - Includes a product search bar in the center.
  * - Uses Auth0 for authentication state.
  */
 export default function Navbar() {
@@ -35,77 +37,84 @@ export default function Navbar() {
   return (
     <nav className="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between border-b bg-white px-6">
       {/* App logo and home link */}
-      <Link href="/" className="text-xl font-semibold">
+      <Link href="/" className="text-xl font-semibold flex-shrink-0">
         Nexus
       </Link>
 
-      {/* Show user menu if authenticated, otherwise show sign-in button */}
-      {!isLoading &&
-        (user ? (
-          <DropdownMenu>
-            {/* Avatar triggers the dropdown menu */}
-            <DropdownMenuTrigger asChild>
-              <Avatar className="h-9 w-9 cursor-pointer">
-                <AvatarImage src={user.picture ?? ""} />
-                <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
+      {/* Product search in the center */}
+      <div className="flex-1 max-w-md mx-8">
+        <NavbarProductSearch placeholder="Search products..." />
+      </div>
 
-            <DropdownMenuContent className="w-56" align="end">
-              {/* User info section in dropdown */}
-              <div className="flex items-center gap-3 px-3 py-2">
-                <Avatar className="h-10 w-10">
+      {/* Show user menu if authenticated, otherwise show sign-in button */}
+      <div className="flex-shrink-0">
+        {!isLoading &&
+          (user ? (
+            <DropdownMenu>
+              {/* Avatar triggers the dropdown menu */}
+              <DropdownMenuTrigger asChild>
+                <Avatar className="h-9 w-9 cursor-pointer">
                   <AvatarImage src={user.picture ?? ""} />
                   <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <div className="space-y-0.5">
-                  <p className="text-sm font-medium leading-none">{user.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {user.email}
-                  </p>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent className="w-56" align="end">
+                {/* User info section in dropdown */}
+                <div className="flex items-center gap-3 px-3 py-2">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={user.picture ?? ""} />
+                    <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-0.5">
+                    <p className="text-sm font-medium leading-none">{user.name}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {user.email}
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              <DropdownMenuSeparator />
+                <DropdownMenuSeparator />
 
-              {/* Navigation links in dropdown */}
-              <DropdownMenuItem asChild>
-                <Link href="/dashboard" className="cursor-pointer">
-                  Dashboard
-                </Link>
-              </DropdownMenuItem>
+                {/* Navigation links in dropdown */}
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard" className="cursor-pointer">
+                    Dashboard
+                  </Link>
+                </DropdownMenuItem>
 
-              <DropdownMenuItem asChild>
-                <Link href="/shop" className="cursor-pointer">
-                  Shop Management
-                </Link>
-              </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/shop" className="cursor-pointer">
+                    Shop Management
+                  </Link>
+                </DropdownMenuItem>
 
-              <DropdownMenuItem asChild>
-                <Link href="/account" className="cursor-pointer">
-                  Account
-                </Link>
-              </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/account" className="cursor-pointer">
+                    Account
+                  </Link>
+                </DropdownMenuItem>
 
-              <DropdownMenuSeparator />
+                <DropdownMenuSeparator />
 
-              {/* Sign out link */}
-              <DropdownMenuItem asChild>
-                <a
-                  href="/auth/logout"
-                  className="w-full cursor-pointer rounded-md text-red-600 hover:bg-red-50 focus:bg-red-100"
-                >
-                  Sign Out
-                </a>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : (
-          // Show sign-in button if not authenticated
-          <Button asChild variant="outline">
-            <a href="/auth/login">Sign In</a>
-          </Button>
-        ))}
+                {/* Sign out link */}
+                <DropdownMenuItem asChild>
+                  <a
+                    href="/auth/logout"
+                    className="w-full cursor-pointer rounded-md text-red-600 hover:bg-red-50 focus:bg-red-100"
+                  >
+                    Sign Out
+                  </a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            // Show sign-in button if not authenticated
+            <Button asChild variant="outline">
+              <a href="/auth/login">Sign In</a>
+            </Button>
+          ))}
+      </div>
     </nav>
   )
 }
