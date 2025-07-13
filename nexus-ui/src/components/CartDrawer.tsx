@@ -69,7 +69,7 @@ export default function CartDrawer() {
                       >
                         <h3 className="font-medium text-sm cursor-pointer">{item.name}</h3>
                       </Link>
-                      <p className="text-sm text-gray-600">${item.price.toFixed(2)}</p>
+                      <p className="text-sm text-gray-600">&#8373;{item.price.toFixed(2)}</p>
                     </div>
                     
                     {/* Quantity Controls */}
@@ -116,7 +116,7 @@ export default function CartDrawer() {
             <div className="border-t p-4 space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-lg font-semibold">Total:</span>
-                <span className="text-xl font-bold">${cartTotal.toFixed(2)}</span>
+                <span className="text-xl font-bold">&#8373;{cartTotal.toFixed(2)}</span>
               </div>
               
               <Button

@@ -97,7 +97,7 @@ const ProductView = ({ productId }: { productId: string }) => {
       <div className="space-y-6">
         <p className="text-sm">{product.category}</p>
         <h1 className="text-3xl font-semibold">{product.name}</h1>
-        <p className="text-2xl font-bold text-gray-800">${product.price.toFixed(2)}</p>
+        <p className="text-2xl font-bold text-gray-800">&#8373;{product.price.toFixed(2)}</p>
         <p className="text-gray-700">{product.description}</p>
 
         <div className="flex items-center space-x-4 mt-4">
