@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Plus, Minus, ShoppingCart, X, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function CartPage() {
   const { cart, cartTotal, isLoading, updateCartItem, removeFromCart } = useCart();
@@ -56,9 +57,19 @@ export default function CartPage() {
                     {cart.map((item, index) => (
                       <div key={item.id}>
                         <div className="flex items-center space-x-4 py-4">
-                          {/* Product Image Placeholder */}
-                          <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <div className="w-16 h-16 bg-blue-500 rounded"></div>
+                          {/* Product Image */}
+                            <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
+                                {item.image ? (
+                                    <Image 
+                                    src={item.image} 
+                                    alt={item.name}
+                                    width={80}
+                                    height={80}
+                                    className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-16 h-16 bg-gray-300 rounded border-2 border-dashed border-gray-400"></div>
+                                )}
                           </div>
                           
                           {/* Product Info */}

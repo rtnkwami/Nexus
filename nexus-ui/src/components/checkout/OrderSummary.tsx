@@ -4,11 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { ShoppingCart, Edit } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface CartItem {
   id: string;
   name: string;
   price: number;
+  image: string;
   quantity: number;
   subtotal: number;
 }
@@ -52,8 +54,18 @@ export default function OrderSummary({ cart, cartTotal, isLoading, onConfirmOrde
               <div className="space-y-4">
                 {cart.map((item) => (
                   <div key={item.id} className="flex items-center space-x-3">
-                    <div className="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center">
-                      <div className="w-12 h-12 bg-blue-500 rounded"></div>
+                    <div className="w-16 h-16 bg-gray-100 rounded-md overflow-hidden flex items-center justify-center">
+                      {item.image ? (
+                        <Image 
+                          src={item.image} 
+                          alt={item.name}
+                          width={64}
+                          height={64}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-300 rounded border-2 border-dashed border-gray-400"></div>
+                      )}
                     </div>
                     <div className="flex-1">
                       <h3 className="font-medium text-sm">{item.name}</h3>

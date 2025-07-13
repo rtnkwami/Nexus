@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/drawer';
 import { Plus, Minus, ShoppingCart, X } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function CartDrawer() {
   const [isOpen, setIsOpen] = useState(false);
@@ -61,6 +62,21 @@ export default function CartDrawer() {
               <div className="space-y-4">
                 {cart.map((item) => (
                   <div key={item.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                    {/* Product Image */}
+                    <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden flex items-center justify-center flex-shrink-0">
+                      {item.image ? (
+                        <Image 
+                          src={item.image} 
+                          alt={item.name}
+                          width={48}
+                          height={48}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 bg-gray-300 rounded border-2 border-dashed border-gray-400"></div>
+                      )}
+                    </div>
+                    
                     <div className="flex-1">
                       <Link 
                         href={`/products/${item.id}`}
