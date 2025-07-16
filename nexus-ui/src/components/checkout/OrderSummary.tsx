@@ -5,6 +5,9 @@ import { Separator } from '@/components/ui/separator';
 import { ShoppingCart, Edit } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { getAccessToken } from '@auth0/nextjs-auth0';
 
 interface CartItem {
   id: string;
@@ -23,6 +26,49 @@ interface OrderSummaryProps {
 }
 
 export default function OrderSummary({ cart, cartTotal, isLoading, onConfirmOrder }: OrderSummaryProps) {
+  const router = useRouter();
+  const [isConfirming, setIsConfirming] = useState(false);
+
+  const handleConfirmOrder = async () => {
+    setIsConfirming(true);
+    
+    try {
+      // Get auth token (adjust this based on your auth implementation)
+      const token = await getAccessToken();
+      
+      const response = await fetch('http://localhost:5000/users/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // Adjust based on your auth header format
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to place order');
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        // Call the parent's onConfirmOrder callback if needed
+        onConfirmOrder();
+        
+        // Redirect to dashboard
+        router.push('/dashboard');
+      } else {
+        throw new Error(data.message || 'Failed to place order');
+      }
+    } catch (error) {
+      console.error('Error placing order:', error);
+      // You might want to show a toast notification or error message here
+      alert(error instanceof Error ? error.message : 'Failed to place order. Please try again.');
+    } finally {
+      setIsConfirming(false);
+    }
+  };
 
   return (
     <Card className="sticky top-8">
@@ -93,10 +139,10 @@ export default function OrderSummary({ cart, cartTotal, isLoading, onConfirmOrde
               <Button 
                 className="w-full mt-6" 
                 size="lg"
-                onClick={onConfirmOrder}
-                disabled={isLoading || cart.length === 0}
+                onClick={handleConfirmOrder}
+                disabled={isLoading || cart.length === 0 || isConfirming}
               >
-                Confirm Order
+                {isConfirming ? 'Processing...' : 'Confirm Order'}
               </Button>
             </>
           )}
