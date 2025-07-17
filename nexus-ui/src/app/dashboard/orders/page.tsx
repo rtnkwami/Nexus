@@ -152,7 +152,7 @@ export default function DashboardOrders() {
               <p className="text-lg font-medium">No orders yet</p>
               <p className="text-sm mt-2">When you place orders, they&apos;ll appear here</p>
               <Button asChild className="mt-4">
-                <Link href="/products">Start Shopping</Link>
+                <Link href="/">Start Shopping</Link>
               </Button>
             </div>
           </CardContent>
