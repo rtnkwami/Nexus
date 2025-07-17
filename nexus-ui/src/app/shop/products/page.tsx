@@ -41,7 +41,6 @@ export default function ProductInventoryPage() {
 
   const isModalOpen = derived.isModalOpen
   const modalTitle = derived.modalTitle
-
   // Render the product inventory UI
   return (
     <div className="space-y-6">

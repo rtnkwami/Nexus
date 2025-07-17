@@ -45,7 +45,10 @@ export default function ProductTable({ products, onEdit, onDelete }: Props) {
             const status = getStockStatus(product.stock)
 
             return (
-              <tr key={product.id} className="border-t hover:bg-gray-50">
+              <tr key={product.id}
+                onClick={() => window.location.href = `/shop/products/${product.id}`}
+                className="border-t hover:bg-gray-50 cursor-pointer">
+
                 <td className="px-4 py-3">
                   <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden flex items-center justify-center flex-shrink-0">
                     {product.images?.[0] ? (
@@ -61,10 +64,8 @@ export default function ProductTable({ products, onEdit, onDelete }: Props) {
                     )}
                   </div>
                 </td>
-                <td className="px-4 py-3 font-medium text-blue-600">
-                  <Link href={`/shop/products/${product.id}`} className="hover:underline">
-                    {product.name}
-                  </Link>
+                <td className="px-4 py-3 font-medium text-black">
+                  {product.name}
                 </td>
                 <td className="px-4 py-3">{product.category}</td>
                 <td className="px-4 py-3 text-right">{product.stock}</td>
@@ -72,7 +73,7 @@ export default function ProductTable({ products, onEdit, onDelete }: Props) {
                   <Badge variant={status.variant}>{status.label}</Badge>
                 </td>
                 <td className="px-4 py-3 text-right">${product.price.toFixed(2)}</td>
-                <td className="px-4 py-3 text-right">
+                <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8">
