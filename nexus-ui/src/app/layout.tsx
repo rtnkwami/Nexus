@@ -3,6 +3,12 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/NavBar";
 import { CartProvider } from "@/contexts/CartContext";
+import { Cabin } from 'next/font/google'
+
+const cabin = Cabin({
+  subsets: ['latin'],
+  display: 'swap',
+})
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={cabin.className}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
