@@ -20,6 +20,12 @@ Order.belongsTo(User);
 Order.belongsToMany(Product, { through: OrderItem });
 Product.belongsToMany(Order, { through: OrderItem });
 
+OrderItem.belongsTo(Order);
+Order.hasMany(OrderItem);
+
+OrderItem.belongsTo(Product);
+Product.hasMany(OrderItem);
+
 export {
     sequelize,
     Shop,
