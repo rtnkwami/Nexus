@@ -90,15 +90,47 @@ export default function ShopLayout({ children }: { children: ReactNode }) {
           </div>
           {/* Navigation links for shop sections */}
           <nav className="flex flex-col gap-2 p-4">
-            <NavLink 
-              href="/shop" 
+            <NavSection 
+              title="Analytics"
               icon={Home}
-              onClick={closeMobileMenu}
-              isActive={pathname === "/shop"}
+              basePath="/shop"
+              pathname={pathname}
               isCollapsed={isCollapsed}
+              onClick={closeMobileMenu}
             >
-              Analytics Dashboard
-            </NavLink>
+              <NavLink 
+                href="/shop/analytics/sales"
+                icon={Package}
+                onClick={closeMobileMenu}
+                isActive={pathname === "/shop/analytics/sales"}
+              >
+                Sales Performance
+              </NavLink>
+              <NavLink 
+                href="/shop/analytics/customers"
+                icon={Package}
+                onClick={closeMobileMenu}
+                isActive={pathname === "/shop/analytics/customers"}
+              >
+                Customer Behavior
+              </NavLink>
+              <NavLink 
+                href="/shop/analytics/returns"
+                icon={Package}
+                onClick={closeMobileMenu}
+                isActive={pathname === "/shop/analytics/returns"}
+              >
+                Fulfillment & Returns
+              </NavLink>
+              <NavLink 
+                href="/shop/analytics/products"
+                icon={Package}
+                onClick={closeMobileMenu}
+                isActive={pathname === "/shop/analytics/products"}
+              >
+                Product Insights
+              </NavLink>
+            </NavSection>
             <NavLink 
               href="/shop/products" 
               icon={Package}
@@ -106,7 +138,7 @@ export default function ShopLayout({ children }: { children: ReactNode }) {
               isActive={pathname === "/shop/products"}
               isCollapsed={isCollapsed}
             >
-              Products
+              Inventory
             </NavLink>
             <NavLink 
               href="/shop/orders" 
@@ -196,5 +228,59 @@ function NavLink({
         </div>
       )}
     </Link>
+  )
+}
+
+function NavSection({
+  title,
+  icon: IconComponent,
+  isCollapsed,
+  basePath,
+  children,
+  pathname,
+  onClick,
+}: {
+  title: string
+  icon: any
+  basePath: string
+  isCollapsed?: boolean
+  children: ReactNode
+  pathname: string
+  onClick?: () => void
+}) {
+  // Submenu opens only if current path is the base or one of the children
+  const isSubPath = pathname === basePath || pathname.startsWith(`${basePath}/analytics`)
+  const [open, setOpen] = useState(isSubPath)
+
+  return (
+    <div>
+      <Link
+        href={basePath}
+        onClick={() => {
+          setOpen(!open)
+          onClick?.()
+        }}
+        className={cn(
+          "flex items-center w-full text-sm font-medium rounded-md transition-colors group relative",
+          isCollapsed ? "p-3 justify-center" : "px-3 py-2 gap-3",
+          isSubPath ? "bg-accent text-accent-foreground font-semibold" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+        )}
+        title={isCollapsed ? title : undefined}
+      >
+        <IconComponent className={cn("transition-all", isCollapsed ? "h-5 w-5" : "h-4 w-4")} />
+        {!isCollapsed && <span className="whitespace-nowrap">{title}</span>}
+        {isCollapsed && (
+          <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded-md shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+            {title}
+          </div>
+        )}
+      </Link>
+
+      {!isCollapsed && open && (
+        <div className="pl-6 mt-1 flex flex-col gap-1">
+          {children}
+        </div>
+      )}
+    </div>
   )
 }

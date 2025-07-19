@@ -46,7 +46,7 @@ export default function ProductInventoryPage() {
     <div className="space-y-6">
       {/* Header with title and add product button */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">Product Inventory</h2>
+        <h2 className="text-2xl font-semibold">Inventory</h2>
 
         <button 
           onClick={handleCreate}
