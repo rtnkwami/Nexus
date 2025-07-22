@@ -39,5 +39,7 @@ export {
     Shop,
     User,
     Product,
-    Order
+    Order,
+    Metric,
+    MetricHistory
 }

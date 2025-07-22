@@ -1,18 +1,36 @@
 export const getDateRange = (period) => {
-    const now = new Date();
-    const endDate = new Date(now); // Default: now
-    let startDate;
-
-    if (period === "weekly") {
-        startDate = new Date(now);
-        startDate.setDate(startDate.getDate() - 7);
-
-    } else if (period === "monthly") {
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-
-    } else {
-        throw new Error("Invalid period: must be 'weekly' or 'monthly'");
-    }
-
-    return { startDate, endDate };
+  const now = new Date();
+  const endDate = new Date(now); // Current moment
+  let startDate;
+  
+  switch (period) {
+    case 'daily':
+      // Last 24 hours
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() - 1);
+      break;
+      
+    case 'weekly':
+      // Last 7 days
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() - 7);
+      break;
+      
+    case 'monthly':
+      // Last 30 days
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() - 30);
+      break;
+      
+    case 'yearly':
+      // Last 365 days
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() - 365);
+      break;
+      
+    default:
+      throw new Error("Invalid period: must be 'daily', 'weekly', 'monthly', or 'yearly'");
+  }
+  
+  return { startDate, endDate };
 };
