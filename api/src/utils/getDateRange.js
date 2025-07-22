@@ -6,26 +6,22 @@ export const getDateRange = (period) => {
   switch (period) {
     case 'daily':
       // Last 24 hours
-      startDate = new Date(now);
-      startDate.setDate(now.getDate() - 1);
+      startDate = new Date(now.getTime() - (24 * 60 * 60 * 1000));
       break;
       
     case 'weekly':
       // Last 7 days
-      startDate = new Date(now);
-      startDate.setDate(now.getDate() - 7);
+      startDate = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
       break;
       
     case 'monthly':
       // Last 30 days
-      startDate = new Date(now);
-      startDate.setDate(now.getDate() - 30);
+      startDate = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
       break;
       
     case 'yearly':
       // Last 365 days
-      startDate = new Date(now);
-      startDate.setDate(now.getDate() - 365);
+      startDate = new Date(now.getTime() - (365 * 24 * 60 * 60 * 1000));
       break;
       
     default:
