@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { getAccessToken } from "@auth0/nextjs-auth0";
 import TotalRevenueCard from "@/components/analytics/TotalRevenueCard";
+import AOVCard from "@/components/analytics/AOVCard";
 
 const getPeriodLabel = (period: string) => {
   switch (period) {
@@ -26,6 +27,12 @@ export default function AnalyticsOverviewPage() {
     dashboard: {
       revenueOverview: {
         totalRevenue: number;
+        percentageChange: number;
+        trend: "up" | "down" | "stable";
+        period: string;
+      },
+      aovOverview: {
+        avgOrderValue: number;
         percentageChange: number;
         trend: "up" | "down" | "stable";
         period: string;
@@ -110,12 +117,18 @@ export default function AnalyticsOverviewPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <TotalRevenueCard
           revenue={data.dashboard.revenueOverview.totalRevenue}
           percentageChange={data.dashboard.revenueOverview.percentageChange}
           trend={data.dashboard.revenueOverview.trend}
           periodLabel={getPeriodLabel(data.dashboard.revenueOverview.period)}
+        />
+        <AOVCard
+          aov={data.dashboard.aovOverview.avgOrderValue}
+          percentageChange={data.dashboard.aovOverview.percentageChange}
+          trend={data.dashboard.aovOverview.trend}
+          periodLabel={getPeriodLabel(data.dashboard.aovOverview.period)}
         />
     </div>
   );
