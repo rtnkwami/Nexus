@@ -5,6 +5,6 @@ import { overviewDashboard } from '../controllers/analytics.controller.js';
 
 const router = express.Router();
 
-router.get('/totalRevenue', checkJwt, overviewDashboard)
+router.get('/overview', checkJwt, overviewDashboard)
 
 export default router;
