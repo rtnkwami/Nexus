@@ -30,3 +30,13 @@ export const getDateRange = (period) => {
   
   return { startDate, endDate };
 };
+
+export const getPreviousDateRange = (period) => {
+    const { startDate, endDate } = getDateRange(period);
+    const duration = endDate.getTime() - startDate.getTime();
+
+    return {
+      startDate: new Date(startDate.getTime() - duration),
+      endDate: startDate
+    };
+};
