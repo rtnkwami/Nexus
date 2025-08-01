@@ -1,28 +1,20 @@
-import { getTotalShopRevenue } from "../services/analytics.service.js"
-import { getDateRange } from "../utils/getDateRange.js";
 import { getUserShopId } from "../utils/getUserShop.js"
+import { Analytics } from "../services/analytics.service.js";
 
-export const getTotalRevenue = async (req, res) => {
+export const overviewDashboard = async (req, res) => {
     try {
         const shopId = await getUserShopId(req);
-        const { period = 'monthly' } = req.query        
-        const totalRevenue = await getTotalShopRevenue(shopId, period);
+        const period = req.query.period;
 
-        if (!shopId) { return res.status(404).json({ error: "Shop not found." }) };
+        const dashboardData = await Analytics.getOverviewDashboard(shopId, period);
+        console.log("Dashboard Data: ", dashboardData);
 
-        return res.json({
-            shopId,
-            period,
-            totalRevenue
+        return res.status(200).json({
+            dashboard: dashboardData
         });
-        
+
     } catch (error) {
-        console.error("Error getting shop revenue: ", error);
+        console.error("Error getting Overview Dashboard: ", error);
         res.status(500).json({ message: "Internal server error" });
     }
-    
-    
-
-    
-
 }
