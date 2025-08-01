@@ -3,8 +3,6 @@ import Shop from "./Shop.js";
 import Product from "./Product.js";
 import Order from "./Order.js";
 import OrderItem from "./OrderItem.js";
-import Metric from "./Metric.js";
-import MetricHistory from "./MetricHistory.js";
 import { sequelize } from "../config/dbConfig.js";
 
 User.hasOne(Shop);
@@ -15,12 +13,6 @@ Product.belongsTo(Shop);
 
 Shop.hasMany(Order);
 Order.belongsTo(Shop);
-
-Shop.hasMany(MetricHistory);
-MetricHistory.belongsTo(Shop);
-
-Metric.hasMany(MetricHistory);
-MetricHistory.belongsTo(Metric);
 
 User.hasMany(Order);
 Order.belongsTo(User);
@@ -39,7 +31,5 @@ export {
     Shop,
     User,
     Product,
-    Order,
-    Metric,
-    MetricHistory
+    Order
 }
