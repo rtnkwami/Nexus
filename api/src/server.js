@@ -6,7 +6,7 @@ import { sequelize } from './models/index.js';
 
 
 app.listen(5000, () => {
-    console.log("Server running on port 3000");
+    console.log("Server running on port 5000");
 });
 
 await testDbConnection();

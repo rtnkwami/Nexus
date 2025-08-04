@@ -1,14 +1,16 @@
-import { fn, col, Op } from "sequelize";
+import { fn, col, Op, literal } from "sequelize";
 import { getDateRange, getPreviousDateRange } from "../../../utils/getDateRange.js";
-import { Order } from "../../../models/index.js";
+import { Order, OrderItem, Product, sequelize } from "../../../models/index.js";
 
 export const getOverviewDashboard = async (shopId, period = 'monthly') => {
     const revenueOverview = await getTotalShopRevenue(shopId, period);
     const aovOverview = await getAverageOrderValue(shopId, period);
+    const topProductsOverview = await getTopProducts(shopId, period);
 
     return {
         revenueOverview,
-        aovOverview
+        aovOverview,
+        topProductsOverview,
     }
 };
 
@@ -49,9 +51,6 @@ const getTotalShopRevenue = async (shopId, period) => {
         const percentageChange = previousRevenue > 0 
             ? ((currentRevenue - previousRevenue) / previousRevenue) * 100 
             : currentRevenue > 0 ? 100 : 0
-
-            console.log("Current Revenue: ", currentRevenue);
-            console.log("Previous Revenue: ", previousRevenue);
             
         return {
             totalRevenue: currentRevenue,
@@ -124,3 +123,46 @@ const getAverageOrderValue = async (shopId, period) => {
         };
     }
 }
+
+
+const getTopProducts = async (shopId, period) => {
+    try {
+        const { startDate, endDate } = getDateRange(period);
+
+        const query = `
+            SELECT 
+                "Products".id,
+                "Products".name,
+                SUM("OrderItems".quantity) AS "totalSold"
+            FROM "OrderItems"
+            INNER JOIN "Orders" ON "OrderItems"."OrderId" = "Orders".id
+            INNER JOIN "Products" ON "OrderItems"."ProductId" = "Products".id
+            WHERE "Orders"."ShopId" = :shopId
+              AND "Orders"."createdAt" BETWEEN :startDate AND :endDate
+            GROUP BY "Products".id
+            ORDER BY "totalSold" DESC
+            LIMIT 5;
+        `;
+
+        const topProducts = await sequelize.query(query, {
+            type: sequelize.QueryTypes.SELECT,
+            replacements: {
+                shopId,
+                startDate,
+                endDate
+            }
+        });
+
+        return {
+            topProducts,
+            period
+        };
+
+    } catch (error) {
+        console.error('Error getting top products:', error);
+        return {
+            topProducts: [],
+            period
+        };
+    }
+};

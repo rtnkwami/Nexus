@@ -31,5 +31,6 @@ export {
     Shop,
     User,
     Product,
-    Order
+    Order,
+    OrderItem
 }
