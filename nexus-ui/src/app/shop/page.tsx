@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { getAccessToken } from "@auth0/nextjs-auth0";
 import TotalRevenueCard from "@/components/analytics/TotalRevenueCard";
 import AOVCard from "@/components/analytics/AOVCard";
+import { ChartBarLabel } from "@/components/analytics/TopProductsGraph";
 
 const getPeriodLabel = (period: string) => {
   switch (period) {
@@ -36,6 +37,10 @@ export default function AnalyticsOverviewPage() {
         percentageChange: number;
         trend: "up" | "down" | "stable";
         period: string;
+      },
+      topProductsOverview: {
+        topProducts: Array<object>,
+        period: string;
       }
     }
   } | null>(null);
@@ -60,6 +65,7 @@ export default function AnalyticsOverviewPage() {
         }
 
         const result = await res.json();
+        console.log(result)
         setData(result);
       } catch (err: any) {
         console.error("Failed to fetch revenue data:", err);
@@ -117,19 +123,44 @@ export default function AnalyticsOverviewPage() {
   }
 
   return (
-    <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <TotalRevenueCard
-          revenue={data.dashboard.revenueOverview.totalRevenue}
-          percentageChange={data.dashboard.revenueOverview.percentageChange}
-          trend={data.dashboard.revenueOverview.trend}
-          periodLabel={getPeriodLabel(data.dashboard.revenueOverview.period)}
-        />
-        <AOVCard
-          aov={data.dashboard.aovOverview.avgOrderValue}
-          percentageChange={data.dashboard.aovOverview.percentageChange}
-          trend={data.dashboard.aovOverview.trend}
-          periodLabel={getPeriodLabel(data.dashboard.aovOverview.period)}
-        />
+    <div className="p-6">
+      <div>Overview</div>
+      <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
+          <div className="col-span-1 sm:col-span-1 lg:col-span-2">
+            <TotalRevenueCard
+              revenue={data.dashboard.revenueOverview.totalRevenue}
+              percentageChange={data.dashboard.revenueOverview.percentageChange}
+              trend={data.dashboard.revenueOverview.trend}
+              periodLabel={getPeriodLabel(data.dashboard.revenueOverview.period)}
+            />
+          </div>
+          <div className="col-span-1 sm:col-span-1 lg:col-span-2">
+            <AOVCard
+              aov={data.dashboard.aovOverview.avgOrderValue}
+              percentageChange={data.dashboard.aovOverview.percentageChange}
+              trend={data.dashboard.aovOverview.trend}
+              periodLabel={getPeriodLabel(data.dashboard.aovOverview.period)}
+            />
+          </div>
+          <div className="col-span-1 sm:col-span-1 lg:col-span-2">
+            <AOVCard
+              aov={data.dashboard.aovOverview.avgOrderValue}
+              percentageChange={data.dashboard.aovOverview.percentageChange}
+              trend={data.dashboard.aovOverview.trend}
+              periodLabel={getPeriodLabel(data.dashboard.aovOverview.period)}
+            />
+          </div>
+          <div className="col-span-1 sm:col-span-1 lg:col-span-3">
+            <ChartBarLabel
+              topProductsData={data.dashboard.topProductsOverview}
+            />
+          </div>
+          {/* <div className="col-span-1 sm:col-span-1 lg:col-span-3">
+            <ChartBarLabel
+              topProductsData={data.dashboard.topProductsOverview}
+            />
+          </div> */}
+      </div>
     </div>
   );
 }
