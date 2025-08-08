@@ -10,7 +10,7 @@ export default function AOVCard({ aov, percentageChange, trend, periodLabel }) {
   return (
     <Card className="p-4">
       <CardContent className="flex flex-col space-y-4">
-        <p className="text-sm text-muted-foreground">Avg. Order Value</p>
+        <p className="text-sm text-muted-foreground">Average Order Value</p>
 
         <div className="text-2xl font-bold tracking-tight">
           &#8373;{aov.toLocaleString(undefined, { minimumFractionDigits: 0 })}

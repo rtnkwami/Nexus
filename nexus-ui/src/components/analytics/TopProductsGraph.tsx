@@ -76,7 +76,7 @@ const CustomTick = (props) => {
 
 export function ChartBarLabel({ topProductsData }) {
   // Transform API data for the chart
-  const chartData = topProductsData?.topProducts?.map(product => ({
+  const chartData = topProductsData?.byPopularity?.map(product => ({
     name: product.name,
     totalSold: product.totalSold
   })) || [];
