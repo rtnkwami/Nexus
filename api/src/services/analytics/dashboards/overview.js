@@ -6,11 +6,16 @@ export const getOverviewDashboard = async (shopId, period = 'monthly') => {
     const revenueOverview = await getTotalShopRevenue(shopId, period);
     const aovOverview = await getAverageOrderValue(shopId, period);
     const topProductsOverview = await getTopProducts(shopId, period);
+    const topProductsFrequency = await getTopProductsFrequency(shopId, period);
 
     return {
         revenueOverview,
         aovOverview,
-        topProductsOverview,
+        topProductsOverview: {
+            byPopularity: topProductsOverview.popularity,
+            byAppearances: topProductsFrequency.frequency,
+        },
+        period,
     }
 };
 
@@ -54,7 +59,6 @@ const getTotalShopRevenue = async (shopId, period) => {
             
         return {
             totalRevenue: currentRevenue,
-            period,
             percentageChange: Math.round(percentageChange * 100) / 100,
             trend: percentageChange > 0 ? 'up' : percentageChange < 0 ? 'down' : 'stable'
         };
@@ -62,7 +66,6 @@ const getTotalShopRevenue = async (shopId, period) => {
         console.error('Error getting revenue comparison:', error);
         return {
             totalRevenue: 0,
-            period,
             percentageChange: 0,
             trend: 'stable'
         };
@@ -109,7 +112,6 @@ const getAverageOrderValue = async (shopId, period) => {
 
         return {
             avgOrderValue: currentAov,
-            period,
             percentageChange: Math.round(percentageChange * 100) / 100,
             trend: percentageChange > 0 ? 'up' : percentageChange < 0 ? 'down' : 'stable'
         };
@@ -117,7 +119,6 @@ const getAverageOrderValue = async (shopId, period) => {
         console.error('Error getting average order value:', error);
         return {
             avgOrderValue: 0,
-            period,
             percentageChange: 0,
             trend: 'stable'
         };
@@ -154,15 +155,58 @@ const getTopProducts = async (shopId, period) => {
         });
 
         return {
-            topProducts,
-            period
+            popularity: topProducts,
         };
 
     } catch (error) {
         console.error('Error getting top products:', error);
         return {
-            topProducts: [],
-            period
+            popularity: [],
+        };
+    }
+};
+
+const getTopProductsFrequency = async (shopId, period) => {
+    try {
+        const { startDate, endDate } = getDateRange(period);
+
+        const query = `
+            SELECT 
+                "Products".id,
+                "Products".name,
+                SUM("OrderItems".quantity * "OrderItems"."priceAtTime") AS "totalRevenue",
+                COUNT(DISTINCT "Orders".id) AS "appearances",
+                COUNT(DISTINCT "Orders".id)::float / NULLIF(
+                (SELECT COUNT(*) FROM "Orders" WHERE "ShopId" = :shopId AND "createdAt" BETWEEN :startDate AND :endDate), 0
+                ) AS "orderFrequency"
+            FROM "OrderItems"
+            INNER JOIN "Orders" ON "OrderItems"."OrderId" = "Orders".id
+            INNER JOIN "Products" ON "OrderItems"."ProductId" = "Products".id
+            WHERE "Orders"."ShopId" = :shopId
+            AND "Orders"."createdAt" BETWEEN :startDate AND :endDate
+            GROUP BY "Products".id
+            ORDER BY "totalRevenue" DESC
+            LIMIT 5;
+        `;
+
+        const topProducts = await sequelize.query(query, {
+            type: sequelize.QueryTypes.SELECT,
+            replacements: {
+                shopId,
+                startDate,
+                endDate
+            }
+        });
+
+        return {
+            frequency: topProducts,
+        };
+
+
+    } catch (error) {
+        console.error('Error getting top products:', error);
+        return {
+            frequency: [],
         };
     }
 };
