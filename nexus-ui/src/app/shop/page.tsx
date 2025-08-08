@@ -7,6 +7,8 @@ import { getAccessToken } from "@auth0/nextjs-auth0";
 import TotalRevenueCard from "@/components/analytics/TotalRevenueCard";
 import AOVCard from "@/components/analytics/AOVCard";
 import { ChartBarLabel } from "@/components/analytics/TopProductsGraph";
+import { ProductsPerformanceTable } from "@/components/analytics/ProductsPerformanceTable";
+import { get } from "http";
 
 const getPeriodLabel = (period: string) => {
   switch (period) {
@@ -30,18 +32,17 @@ export default function AnalyticsOverviewPage() {
         totalRevenue: number;
         percentageChange: number;
         trend: "up" | "down" | "stable";
-        period: string;
       },
       aovOverview: {
         avgOrderValue: number;
         percentageChange: number;
         trend: "up" | "down" | "stable";
-        period: string;
       },
       topProductsOverview: {
-        topProducts: Array<object>,
-        period: string;
-      }
+        byPopularity: Array<object>,
+        byAppearances: Array<object>;
+      },
+      period: string;
     }
   } | null>(null);
   
@@ -131,7 +132,7 @@ export default function AnalyticsOverviewPage() {
               revenue={data.dashboard.revenueOverview.totalRevenue}
               percentageChange={data.dashboard.revenueOverview.percentageChange}
               trend={data.dashboard.revenueOverview.trend}
-              periodLabel={getPeriodLabel(data.dashboard.revenueOverview.period)}
+              periodLabel={getPeriodLabel(data.dashboard.period)}
             />
           </div>
           <div className="col-span-1 sm:col-span-1 lg:col-span-2">
@@ -139,7 +140,7 @@ export default function AnalyticsOverviewPage() {
               aov={data.dashboard.aovOverview.avgOrderValue}
               percentageChange={data.dashboard.aovOverview.percentageChange}
               trend={data.dashboard.aovOverview.trend}
-              periodLabel={getPeriodLabel(data.dashboard.aovOverview.period)}
+              periodLabel={getPeriodLabel(data.dashboard.period)}
             />
           </div>
           <div className="col-span-1 sm:col-span-1 lg:col-span-2">
@@ -147,7 +148,7 @@ export default function AnalyticsOverviewPage() {
               aov={data.dashboard.aovOverview.avgOrderValue}
               percentageChange={data.dashboard.aovOverview.percentageChange}
               trend={data.dashboard.aovOverview.trend}
-              periodLabel={getPeriodLabel(data.dashboard.aovOverview.period)}
+              periodLabel={getPeriodLabel(data.dashboard.period)}
             />
           </div>
           <div className="col-span-1 sm:col-span-1 lg:col-span-3">
@@ -155,11 +156,12 @@ export default function AnalyticsOverviewPage() {
               topProductsData={data.dashboard.topProductsOverview}
             />
           </div>
-          {/* <div className="col-span-1 sm:col-span-1 lg:col-span-3">
-            <ChartBarLabel
-              topProductsData={data.dashboard.topProductsOverview}
+          <div className="col-span-1 sm:col-span-1 lg:col-span-3">
+            <ProductsPerformanceTable
+              productsData={data.dashboard.topProductsOverview.byAppearances}
+              period={getPeriodLabel(data.dashboard.period)}
             />
-          </div> */}
+          </div>
       </div>
     </div>
   );
