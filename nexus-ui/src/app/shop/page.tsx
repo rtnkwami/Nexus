@@ -5,10 +5,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { getAccessToken } from "@auth0/nextjs-auth0";
 import TotalRevenueCard from "@/components/analytics/TotalRevenueCard";
+import RepeatPurchaseCard from "@/components/analytics/RepeatPurchaseRate";
 import AOVCard from "@/components/analytics/AOVCard";
 import { ChartBarLabel } from "@/components/analytics/TopProductsGraph";
 import { ProductsPerformanceTable } from "@/components/analytics/ProductsPerformanceTable";
-import { get } from "http";
 
 const getPeriodLabel = (period: string) => {
   switch (period) {
@@ -35,6 +35,11 @@ export default function AnalyticsOverviewPage() {
       },
       aovOverview: {
         avgOrderValue: number;
+        percentageChange: number;
+        trend: "up" | "down" | "stable";
+      },
+      repeatPurchaseRate: {
+        rate: number;
         percentageChange: number;
         trend: "up" | "down" | "stable";
       },
@@ -125,7 +130,6 @@ export default function AnalyticsOverviewPage() {
 
   return (
     <div className="p-6">
-      <div>Overview</div>
       <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
           <div className="col-span-1 sm:col-span-1 lg:col-span-2">
             <TotalRevenueCard
@@ -144,12 +148,12 @@ export default function AnalyticsOverviewPage() {
             />
           </div>
           <div className="col-span-1 sm:col-span-1 lg:col-span-2">
-            <AOVCard
-              aov={data.dashboard.aovOverview.avgOrderValue}
-              percentageChange={data.dashboard.aovOverview.percentageChange}
-              trend={data.dashboard.aovOverview.trend}
+            <RepeatPurchaseCard
+              rate={data.dashboard.repeatPurchaseRate.rate}
+              percentageChange={data.dashboard.repeatPurchaseRate.percentageChange}
+              trend={data.dashboard.repeatPurchaseRate.trend}
               periodLabel={getPeriodLabel(data.dashboard.period)}
-            />
+          />
           </div>
           <div className="col-span-1 sm:col-span-1 lg:col-span-3">
             <ChartBarLabel
