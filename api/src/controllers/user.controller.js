@@ -89,6 +89,7 @@ export const getOneUserOrder = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 }
+
 export const placeOrder = async (req, res) => {
     const transaction = await sequelize.transaction();
 
@@ -106,52 +107,72 @@ export const placeOrder = async (req, res) => {
             transaction 
         });
 
-        const shop = await Shop.findOne({
-            where: { UserId: user.id },
-            transaction 
+        const cartProductIds = cart.map(item => item.id);
+        const products = await Product.findAll({
+            where: { id: cartProductIds },
+            transaction
         });
 
-        const order = await Order.create({
-            UserId: user.id,
-            ShopId: shop.id
-        },{ transaction });
-
-        for (const item of cart) { 
-            const product = await Product.findByPk(item.id, { transaction });
+        const shopGroups = {};
+        for (const item of cart) {
+            const product = products.find(p => p.id === item.id);
+            const shopId = product.ShopId;
             
-            if (product.stock < item.quantity) {
-                await transaction.rollback();
-                return res.status(400).json({ message: `Insufficient stock for product ${product.name}` });
+            if (!shopGroups[shopId]) {
+                shopGroups[shopId] = [];
+            }
+            shopGroups[shopId].push({ product, quantity: item.quantity });
+        }
+
+        const createdOrders = [];
+
+        for (const shopId of Object.keys(shopGroups)) {
+            const order = await Order.create({
+                UserId: user.id,
+                ShopId: shopId
+            }, { transaction });
+
+            const shopItems = shopGroups[shopId];
+
+            for (const { product, quantity } of shopItems) {
+                if (product.stock < quantity) {
+                    await transaction.rollback();
+                    return res.status(400).json({ message: `Insufficient stock for product ${product.name}` });
+                }
+
+                await order.addProduct(product, {
+                    through: {
+                        quantity: quantity,
+                        priceAtTime: product.price
+                    },
+                    transaction
+                });
+
+                const total = Math.round((quantity * product.price) * 100) / 100;
+                await order.update({ total: order.total + total }, { transaction });
+
+                await product.decrement('stock', {
+                    by: quantity,
+                    transaction
+                });
             }
 
-            await order.addProduct(product, {
-                through: {
-                    quantity: item.quantity,
-                    priceAtTime: product.price
-                },
-                transaction
-            });
-
-            const total = Math.round((item.quantity * product.price) * 100) / 100;
-            await order.update({ total: order.total + total }, { transaction });
-
-            await product.decrement('stock', { 
-                by: item.quantity,
-                transaction
-            });
-        };
+            createdOrders.push(order.id);
+        }
 
         await transaction.commit();
         req.session.cart = [];
     
         return res.status(201).json({
             success: true,
-            orderId: order.id,
+            orders: createdOrders,
             message: 'Order created successfully'
         });
 
     } catch (error) {
-        await transaction.rollback();
+        if (!transaction.finished) {
+            await transaction.rollback();
+        }
         console.error("Error creating order: ", error);
         return res.status(500).json({ message: "Internal server error" });
     }
