@@ -1,16 +1,18 @@
-import { fn, col, Op, literal } from "sequelize";
+import { fn, col, Op } from "sequelize";
 import { getDateRange, getPreviousDateRange } from "../../../utils/getDateRange.js";
-import { Order, OrderItem, Product, sequelize } from "../../../models/index.js";
+import { Order, sequelize } from "../../../models/index.js";
 
 export const getOverviewDashboard = async (shopId, period = 'monthly') => {
     const revenueOverview = await getTotalShopRevenue(shopId, period);
     const aovOverview = await getAverageOrderValue(shopId, period);
     const topProductsOverview = await getTopProducts(shopId, period);
     const topProductsFrequency = await getTopProductsFrequency(shopId, period);
+    const repeatPurchaseRate = await getRepeatPurchaseRate(shopId, period);
 
     return {
         revenueOverview,
         aovOverview,
+        repeatPurchaseRate,
         topProductsOverview: {
             byPopularity: topProductsOverview.popularity,
             byAppearances: topProductsFrequency.frequency,
@@ -207,6 +209,70 @@ const getTopProductsFrequency = async (shopId, period) => {
         console.error('Error getting top products:', error);
         return {
             frequency: [],
+        };
+    }
+};
+
+const getRepeatPurchaseRate = async (shopId, period) => {
+    try {
+        const { startDate, endDate } = getDateRange(period);
+        const { startDate: prevStart, endDate: prevEnd } = getPreviousDateRange(period);
+
+        const repeatPurchaseQuery = `
+            SELECT
+                COUNT(*)::float / NULLIF(
+                (SELECT COUNT(DISTINCT "UserId")
+                FROM "Orders"
+                WHERE "ShopId" = :shopId
+                    AND "createdAt" BETWEEN :startDate AND :endDate
+                ), 0
+                ) AS "repeatPurchaseRate"
+            FROM (
+                SELECT "UserId"
+                FROM "Orders"
+                WHERE "ShopId" = :shopId
+                AND "createdAt" BETWEEN :startDate AND :endDate
+                GROUP BY "UserId"
+                HAVING COUNT(*) > 1
+            ) AS repeat_customers;
+            `;
+
+        const [currentResult, previousResult] = await Promise.all([
+            sequelize.query(repeatPurchaseQuery, {
+                type: sequelize.QueryTypes.SELECT,
+                replacements: {
+                    shopId,
+                    startDate,
+                    endDate
+                }
+            }),
+            sequelize.query(repeatPurchaseQuery, {
+                type: sequelize.QueryTypes.SELECT,
+                replacements: {
+                    shopId,
+                    startDate: prevStart,
+                    endDate: prevEnd
+                }
+            })
+        ]);
+
+    const currentRate = (currentResult[0]?.repeatPurchaseRate || 0) * 100;
+    const previousRate = (previousResult[0]?.repeatPurchaseRate || 0) * 100;
+
+    const percentageChange = currentRate - previousRate;
+
+    return {
+        rate: Math.round(currentRate * 100) / 100,
+        percentageChange: Math.round(percentageChange * 100) / 100,
+        trend: percentageChange > 0 ? 'up' : percentageChange < 0 ? 'down' : 'stable',
+    };
+
+    } catch (error) {
+        console.error('Error getting repeat purchase rate:', error);
+        return {
+            rate: 0,
+            percentageChange: 0,
+            trend: 'stable'
         };
     }
 };
