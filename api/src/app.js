@@ -24,7 +24,6 @@ app.use('/analytics', analyticsRoutes);
 
 app.get('/', checkJwt, (req, res) => {
     res.status(200).json({ message: "Correctly authenticated app!" });
-    console.log(req.auth.payload);
 })
 
 export default app;
