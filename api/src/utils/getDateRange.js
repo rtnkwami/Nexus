@@ -40,3 +40,14 @@ export const getPreviousDateRange = (period) => {
       endDate: startDate
     };
 };
+
+
+export const getLineGraphDateRange = (fromDate, toDate) => {
+  const startDate = new Date(fromDate);
+  startDate.setHours(0, 0, 0, 0);
+  
+  const endDate = new Date(toDate);
+  endDate.setHours(23, 59, 59, 999);
+  
+  return { startDate, endDate };
+};
