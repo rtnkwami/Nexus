@@ -4,11 +4,11 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { getAccessToken } from "@auth0/nextjs-auth0";
-import TotalRevenueCard from "@/components/analytics/TotalRevenueCard";
-import RepeatPurchaseCard from "@/components/analytics/RepeatPurchaseRate";
-import AOVCard from "@/components/analytics/AOVCard";
-import { ChartBarLabel } from "@/components/analytics/TopProductsGraph";
-import { ProductsPerformanceTable } from "@/components/analytics/ProductsPerformanceTable";
+import TotalRevenueCard from "@/components/analytics/overview/TotalRevenueCard";
+import RepeatPurchaseCard from "@/components/analytics/overview/RepeatPurchaseRate";
+import AOVCard from "@/components/analytics/overview/AOVCard";
+import { ChartBarLabel } from "@/components/analytics/overview/TopProductsGraph";
+import { ProductsPerformanceTable } from "@/components/analytics/overview/ProductsPerformanceTable";
 
 const getPeriodLabel = (period: string) => {
   switch (period) {
