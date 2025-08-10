@@ -3,7 +3,7 @@ import Product from "../models/Product.js";
 import User from "../models/User.js";
 import Order from "../models/Order.js";
 import { removeUndefined } from "../utils/cleanInputs.js";
-import { Op } from "sequelize";
+import { fn, col, where, Op } from "sequelize";
 import { getUserShopId } from "../utils/getUserShop.js";
 
 export const updateShopMetadata =  async (req, res) => {
@@ -73,12 +73,12 @@ export const createShopProduct = async (req, res) => {
 
 export const getShopProducts = async (req, res) => {    
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 30;
+    const limit = parseInt(req.query.limit) || 20;
     const  offset = (page - 1) * limit;
 
     try {
 
-        const shopId  = await getUserShopId(req);
+        const { shopId }  = req.params;
         const { category, minPrice, maxPrice, search } = req.query;
         const productQuery = { ShopId: shopId }
 
@@ -86,14 +86,27 @@ export const getShopProducts = async (req, res) => {
         const max = Number(maxPrice);
 
         if (category) { productQuery.category = category }
-        if (minPrice && maxPrice) { productQuery.price = { [Op.between]: [min, max] } }
-        if (search) { productQuery.name = { [Op.like]: `%${ search }%` } }
+        if (minPrice || maxPrice) {
+            productQuery.price = {};
+            if (minPrice) { productQuery.price[Op.gte] = min }
+            if (maxPrice) { productQuery.price[Op.lte] = max }
+        }
+
+
+        const whereClause = { ...productQuery };
+
+        if (search) {
+            whereClause.name = {
+                [Op.iLike]: `%${search}%`,
+            };
+        }
 
 
         const { count, rows } = await Product.findAndCountAll({ 
-            where: productQuery,
+            where: whereClause,
             offset,
-            limit
+            limit,
+            order: [['updatedAt', 'DESC']]
         });
 
         res.status(200).json({
@@ -129,16 +142,19 @@ export const getOneShopProduct = async (req, res) => {
 }
 
 export const updateShopProduct = async (req, res) => {
-    const { name, description, category, price, stock } = req.body.product;
+    const productBody = req.body.product;
+    const productImages = req.body.images;
     const { productId } = req.params;
+    console.log(req.body.images)
 
-    const productUpdate = removeUndefined({ 
-        name,
-        description,
-        category,
-        price,
-        stock
-     });
+    const productUpdate = {}
+
+    if (productBody.name) { productUpdate.name = productBody.name }
+    if (productBody.description) { productUpdate.description = productBody.description }
+    if (productBody.category) { productUpdate.category = productBody.category }
+    if (productBody.price) { productUpdate.price = productBody.price }
+    if (productBody.stock) { productUpdate.stock = productBody.stock }
+    if (productImages) { productUpdate.images = productImages }
 
     try {
         const product = await Product.findByPk(productId);

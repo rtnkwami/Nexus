@@ -1,8 +1,9 @@
 import Product from "../models/Product.js";
+import { fn, col, where, Op } from "sequelize";
 
 export const getAllProducts = async (req, res) => {    
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 30;
+    const limit = parseInt(req.query.limit) || 20;
     const  offset = (page - 1) * limit;
 
     try {
@@ -13,13 +14,27 @@ export const getAllProducts = async (req, res) => {
         const max = Number(maxPrice);
 
         if (category) { productQuery.category = category }
-        if (minPrice && maxPrice) { productQuery.price = { [Op.between]: [min, max] } }
-        if (search) { productQuery.name = { [Op.like]: `%${ search }%` } }
+        if (minPrice || maxPrice) {
+            productQuery.price = {};
+            if (minPrice) { productQuery.price[Op.gte] = min }
+            if (maxPrice) { productQuery.price[Op.lte] = max }
+        }
+
+
+        const whereClause = { ...productQuery };
+
+        if (search) {
+            whereClause.name = {
+                [Op.iLike]: `%${search}%`,
+            };
+        }
+
 
         const { count, rows } = await Product.findAndCountAll({ 
-            where: productQuery,
+            where: whereClause,
             offset,
-            limit
+            limit,
+            order: [['updatedAt', 'DESC']]
         });
 
         res.status(200).json({
@@ -55,20 +70,19 @@ export const getOneProduct = async (req, res) => {
 }
 
 export const getProductCategories = async (req, res) => {
-    try {
-        const categories = await Product.findAll({
-            attributes: ['category'],
-            group: 'category'
-        });
-        if (!categories || categories.length === 0) {
-            return res.status(404).json({ message: "No categories found" });
-        }
+  try {
+    const categories = await Product.findAll({
+      attributes: [[fn('DISTINCT', col('category')), 'category']],
+    });
 
-        res.status(200).json({ categories: categories.map(cat => cat.category) });
-
-
-    } catch (error) {
-        console.error("Error getting product categories: ", error);
-        res.status(500).json({ message: "Internal server error" });
+    if (!categories || categories.length === 0) {
+      return res.status(404).json({ message: "No categories found" });
     }
-}
+
+    res.status(200).json({ categories: categories.map(cat => cat.get('category')) });
+
+  } catch (error) {
+    console.error("Error getting product categories: ", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
