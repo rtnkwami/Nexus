@@ -26,7 +26,7 @@ interface HistoricalRevenueGraphProps {
 
 const chartConfig = {
   revenue: {
-    label: "₵",
+    label: "GHS",
     color: "var(--chart-1)",
   },
 } satisfies ChartConfig;
