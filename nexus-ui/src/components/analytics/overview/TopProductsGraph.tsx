@@ -1,7 +1,8 @@
 "use client"
 
 import { TrendingUp } from "lucide-react"
-import { Bar, BarChart, CartesianGrid, LabelList, XAxis } from "recharts"
+// 1. Import the `Cell` component from recharts
+import { Bar, BarChart, CartesianGrid, LabelList, XAxis, Cell } from "recharts"
 
 import {
   Card,
@@ -18,27 +19,25 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
+// The config is still useful for the label in the tooltip
 const chartConfig = {
   totalSold: {
     label: "Units Sold",
-    color: "var(--chart-1)",
   },
 } satisfies ChartConfig;
 
-// Custom tick component for wrapping text
+// Custom tick component for wrapping text (no changes needed here)
 const CustomTick = (props) => {
   const { x, y, payload } = props;
   const words = payload.value.split(' ');
   const lineHeight = 14;
-  const maxWidth = 80; // Adjust based on your needs
+  const maxWidth = 80;
   
-  // Simple word wrapping logic
   const lines = [];
   let currentLine = '';
   
   words.forEach(word => {
     const testLine = currentLine ? `${currentLine} ${word}` : word;
-    // Rough character width estimation (you can adjust this)
     if (testLine.length * 6 > maxWidth) {
       if (currentLine) {
         lines.push(currentLine);
@@ -75,7 +74,9 @@ const CustomTick = (props) => {
 };
 
 export function ChartBarLabel({ topProductsData }) {
-  // Transform API data for the chart
+  // 2. Define your color palette
+  const colors = ["#2563eb", "#84cc16", "#f97316", "#d946ef", "#14b8a6"]; // Blue, Green, Orange, Purple, Teal
+
   const chartData = topProductsData?.byPopularity?.map(product => ({
     name: product.name,
     totalSold: product.totalSold
@@ -96,7 +97,7 @@ export function ChartBarLabel({ topProductsData }) {
             data={chartData}
             margin={{
               top: 20,
-              bottom: 60, // Increased bottom margin for wrapped text
+              bottom: 60,
             }}
           >
             <CartesianGrid vertical={false} />
@@ -106,20 +107,27 @@ export function ChartBarLabel({ topProductsData }) {
               tickMargin={10}
               axisLine={false}
               tick={<CustomTick />}
-              height={1} // Increased height for wrapped text
-              interval={0} // Show all ticks
+              height={1}
+              interval={0}
             />
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent hideLabel />}
             />
-            <Bar dataKey="totalSold" fill="var(--color-totalSold)" radius={8}>
+            {/* 3. Render a <Cell> for each data point inside the <Bar> */}
+            <Bar dataKey="totalSold" radius={8}>
               <LabelList
                 position="top"
                 offset={12}
                 className="fill-foreground"
                 fontSize={12}
               />
+              {chartData.map((entry, index) => (
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={colors[index % colors.length]} 
+                />
+              ))}
             </Bar>
           </BarChart>
         </ChartContainer>
