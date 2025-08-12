@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { getAccessToken } from "@auth0/nextjs-auth0";
 import HistoricalRevenueGraph from "@/components/analytics/salesPerformance/HistoricalRevenueGraph";
+import TopCategoriesGraph from "@/components/analytics/salesPerformance/TopSalesCategories";
 
 export default function SalesPerformance() {
   const [data, setData] = useState<any>(null);
@@ -99,9 +100,15 @@ export default function SalesPerformance() {
       )}
 
       {data && !loading && !error && (
-        <div className="mt-6">
+        <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="col-span-1 sm:col-span-1 lg:col-span-2">
           <HistoricalRevenueGraph data={data.dashboard.historicalSales} />
+          </div>
+          <div className="col-span-1 sm:col-span-1 lg:col-span-2">
+          <TopCategoriesGraph data={data.dashboard.topCategories} />
+          </div>
         </div>
+        
       )}
     </div>
   );
