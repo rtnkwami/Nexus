@@ -1,7 +1,6 @@
 "use client";
 
-import { TrendingUp } from "lucide-react";
-import { CartesianGrid, Line, LineChart, XAxis, ResponsiveContainer } from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import {
   Card,
   CardContent,
@@ -51,7 +50,6 @@ export default function HistoricalRevenueGraph({ data }: HistoricalRevenueGraphP
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
           <LineChart
             accessibilityLayer
             data={chartData}
@@ -67,6 +65,7 @@ export default function HistoricalRevenueGraph({ data }: HistoricalRevenueGraphP
               axisLine={false}
               tickMargin={8}
             />
+            <YAxis tickLine={false} axisLine={false} tickMargin={8} />
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent />}
@@ -84,13 +83,9 @@ export default function HistoricalRevenueGraph({ data }: HistoricalRevenueGraphP
               }}
             />
           </LineChart>
-          </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 leading-none font-medium">
-          Trending up this period <TrendingUp className="h-4 w-4" />
-        </div>
         <div className="text-muted-foreground leading-none">
           Revenue over selected range
         </div>
