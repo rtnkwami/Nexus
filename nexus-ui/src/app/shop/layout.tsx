@@ -8,12 +8,10 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Home, Package, ShoppingCart, Settings, Menu, X, ChevronLeft, ChevronRight } from "lucide-react"
+import { Home, Package, ShoppingCart, Settings, Menu, X, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react"
 
 /**
  * ShopLayout wraps all /shop pages with a responsive sidebar and main content area.
- * The sidebar contains navigation links for shop management sections.
- * On mobile, it shows as a slide-out drawer with hamburger menu.
  */
 export default function ShopLayout({ children }: { children: ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -59,15 +57,10 @@ export default function ShopLayout({ children }: { children: ReactNode }) {
       {/* Sidebar - responsive */}
       <aside
         className={cn(
-          // Base styles - dynamic width based on collapse state
           "fixed left-0 top-0 z-40 h-screen flex-col justify-between border-r bg-background transition-all duration-300 ease-in-out",
-          // Width changes based on collapse state
           isCollapsed ? "w-20" : "w-64",
-          // Mobile: slide in/out from left
           "transform md:translate-x-0",
-          // Desktop: always visible
           "md:flex",
-          // Mobile: show/hide based on state
           isMobileMenuOpen ? "flex translate-x-0" : "hidden -translate-x-full md:flex"
         )}
       >
@@ -93,11 +86,20 @@ export default function ShopLayout({ children }: { children: ReactNode }) {
             <NavSection 
               title="Analytics"
               icon={Home}
-              basePath="/shop"
+              pathPrefix="/shop/analytics"
               pathname={pathname}
               isCollapsed={isCollapsed}
-              onClick={closeMobileMenu}
+              // ## CHANGE 1: Pass the `toggleCollapse` function down ##
+              onCollapseClick={toggleCollapse}
             >
+              <NavLink 
+                href="/shop/analytics/overview"
+                icon={Package}
+                onClick={closeMobileMenu}
+                isActive={pathname === "/shop/analytics/overview"}
+              >
+                Overview
+              </NavLink>
               <NavLink 
                 href="/shop/analytics/sales-performance"
                 icon={Package}
@@ -105,22 +107,6 @@ export default function ShopLayout({ children }: { children: ReactNode }) {
                 isActive={pathname === "/shop/analytics/sales-performance"}
               >
                 Sales Performance
-              </NavLink>
-              <NavLink 
-                href="/shop/analytics/customers"
-                icon={Package}
-                onClick={closeMobileMenu}
-                isActive={pathname === "/shop/analytics/customers"}
-              >
-                Customer Behavior
-              </NavLink>
-              <NavLink 
-                href="/shop/analytics/returns"
-                icon={Package}
-                onClick={closeMobileMenu}
-                isActive={pathname === "/shop/analytics/returns"}
-              >
-                Fulfillment & Returns
               </NavLink>
               <NavLink 
                 href="/shop/analytics/products"
@@ -169,11 +155,8 @@ export default function ShopLayout({ children }: { children: ReactNode }) {
       {/* Main content area - responsive */}
       <main 
         className={cn(
-          // Base styles
           "h-screen overflow-y-auto pt-16",
-          // Mobile: no left margin, account for hamburger button
           "ml-0 pl-16 pr-6 pb-6 md:pl-6 md:pr-6 md:pb-6",
-          // Desktop: dynamic left margin based on sidebar state
           isCollapsed ? "md:ml-20" : "md:ml-64"
         )}
       >
@@ -185,7 +168,6 @@ export default function ShopLayout({ children }: { children: ReactNode }) {
 
 /**
  * NavLink is a helper component for sidebar navigation.
- * It renders a styled link with an icon and label.
  */
 function NavLink({
   href,
@@ -208,11 +190,8 @@ function NavLink({
       onClick={onClick}
       className={cn(
         "flex items-center rounded-md text-sm font-medium transition-colors group relative",
-        // Adjust padding based on collapse state
         isCollapsed ? "p-3 justify-center" : "px-3 py-2 gap-3",
-        // Default styles for inactive state
         !isActive && "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-        // Active state styles
         isActive && "bg-accent text-accent-foreground font-semibold"
       )}
       title={isCollapsed ? children?.toString() : undefined}
@@ -221,7 +200,6 @@ function NavLink({
       {!isCollapsed && (
         <span className="whitespace-nowrap">{children}</span>
       )}
-      {/* Tooltip for collapsed state */}
       {isCollapsed && (
         <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded-md shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
           {children}
@@ -235,48 +213,64 @@ function NavSection({
   title,
   icon: IconComponent,
   isCollapsed,
-  basePath,
+  pathPrefix,
   children,
   pathname,
-  onClick,
+  onCollapseClick, // Added prop
 }: {
   title: string
   icon: any
-  basePath: string
+  pathPrefix: string
   isCollapsed?: boolean
   children: ReactNode
   pathname: string
-  onClick?: () => void
+  onCollapseClick?: () => void // Added prop type
 }) {
-  // Submenu opens only if current path is the base or one of the children
-  const isSubPath = pathname === basePath || pathname.startsWith(`${basePath}/analytics`)
-  const [open, setOpen] = useState(isSubPath)
+  const isActive = pathname.startsWith(pathPrefix)
+  const [isOpen, setIsOpen] = useState(isActive)
 
   return (
     <div>
-      <Link
-        href={basePath}
+      <button
+        type="button"
+        // ## CHANGE 2: Updated onClick logic ##
         onClick={() => {
-          setOpen(!open)
-          onClick?.()
+          if (isCollapsed) {
+            // If the sidebar is collapsed, call the function to expand it.
+            onCollapseClick?.()
+            // Also, ensure the submenu is set to open.
+            setIsOpen(true)
+          } else {
+            // Otherwise, just toggle the submenu as before.
+            setIsOpen(!isOpen)
+          }
         }}
         className={cn(
-          "flex items-center w-full text-sm font-medium rounded-md transition-colors group relative",
-          isCollapsed ? "p-3 justify-center" : "px-3 py-2 gap-3",
-          isSubPath ? "bg-accent text-accent-foreground font-semibold" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+          "flex items-center justify-between w-full text-sm font-medium rounded-md transition-colors group relative",
+          isCollapsed ? "p-3 justify-center" : "px-3 py-2",
+          isActive ? "bg-accent text-accent-foreground font-semibold" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
         )}
         title={isCollapsed ? title : undefined}
       >
-        <IconComponent className={cn("transition-all", isCollapsed ? "h-5 w-5" : "h-4 w-4")} />
-        {!isCollapsed && <span className="whitespace-nowrap">{title}</span>}
+        <div className="flex items-center gap-3">
+            <IconComponent className={cn("transition-all", isCollapsed ? "h-5 w-5" : "h-4 w-4")} />
+            {!isCollapsed && <span className="whitespace-nowrap">{title}</span>}
+        </div>
+        
+        {!isCollapsed && (
+            <ChevronDown 
+                className={cn("h-4 w-4 transition-transform duration-200", isOpen && "rotate-180")}
+            />
+        )}
+
         {isCollapsed && (
           <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded-md shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
             {title}
           </div>
         )}
-      </Link>
+      </button>
 
-      {!isCollapsed && open && (
+      {!isCollapsed && isOpen && (
         <div className="pl-6 mt-1 flex flex-col gap-1">
           {children}
         </div>

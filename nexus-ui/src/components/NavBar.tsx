@@ -90,7 +90,7 @@ export default function Navbar() {
                 </DropdownMenuItem>
 
                 <DropdownMenuItem asChild>
-                  <Link href="/shop" className="cursor-pointer">
+                  <Link href="/shop/analytics/overview" className="cursor-pointer">
                     Shop Management
                   </Link>
                 </DropdownMenuItem>
