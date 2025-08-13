@@ -34,6 +34,7 @@ const getTotalShopRevenue = async (shopId, period) => {
                 ],
                 where: {
                     ShopId: shopId,
+                    status: 'completed',
                     createdAt: { 
                         [Op.between]: [startDate, endDate]
                     }
@@ -45,6 +46,7 @@ const getTotalShopRevenue = async (shopId, period) => {
                 ],
                 where: {
                     ShopId: shopId,
+                    status: 'completed',
                     createdAt: {
                         [Op.between]: [prevStart, prevEnd]
                     }
@@ -87,6 +89,7 @@ const getAverageOrderValue = async (shopId, period) => {
                 ],
                 where: {
                     ShopId: shopId,
+                    status: 'completed',
                     createdAt: { 
                         [Op.between]: [startDate, endDate]
                     }
@@ -98,6 +101,7 @@ const getAverageOrderValue = async (shopId, period) => {
                 ],
                 where: {
                     ShopId: shopId,
+                    status: 'completed',
                     createdAt: {
                         [Op.between]: [prevStart, prevEnd]
                     }
@@ -142,6 +146,7 @@ const getTopProducts = async (shopId, period) => {
             INNER JOIN "Products" ON "OrderItems"."ProductId" = "Products".id
             WHERE "Orders"."ShopId" = :shopId
               AND "Orders"."createdAt" BETWEEN :startDate AND :endDate
+              AND "Orders".status = 'completed'
             GROUP BY "Products".id
             ORDER BY "totalSold" DESC
             LIMIT 5;
@@ -185,7 +190,8 @@ const getTopProductsFrequency = async (shopId, period) => {
             INNER JOIN "Orders" ON "OrderItems"."OrderId" = "Orders".id
             INNER JOIN "Products" ON "OrderItems"."ProductId" = "Products".id
             WHERE "Orders"."ShopId" = :shopId
-            AND "Orders"."createdAt" BETWEEN :startDate AND :endDate
+                AND "Orders"."createdAt" BETWEEN :startDate AND :endDate
+                AND "Orders".status = 'completed'
             GROUP BY "Products".id
             ORDER BY "totalRevenue" DESC
             LIMIT 5;
@@ -231,7 +237,8 @@ const getRepeatPurchaseRate = async (shopId, period) => {
                 SELECT "UserId"
                 FROM "Orders"
                 WHERE "ShopId" = :shopId
-                AND "createdAt" BETWEEN :startDate AND :endDate
+                    AND "createdAt" BETWEEN :startDate AND :endDate
+                    AND "status" = 'completed'
                 GROUP BY "UserId"
                 HAVING COUNT(*) > 1
             ) AS repeat_customers;

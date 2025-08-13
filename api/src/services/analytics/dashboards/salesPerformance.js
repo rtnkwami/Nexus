@@ -155,6 +155,7 @@ const getSalesOverTime = async (shopId, fromDate, toDate, granularity) => {
                 FROM "Orders"
                 WHERE "Orders"."ShopId" = :shopId
                     AND "Orders"."createdAt" BETWEEN :startDate AND :endDate
+                    AND "Orders".status = 'completed'
                 GROUP BY date_trunc('week', "Orders"."createdAt")::date
                 ORDER BY period;
             `;
@@ -178,6 +179,7 @@ const getSalesOverTime = async (shopId, fromDate, toDate, granularity) => {
                 FROM "Orders"
                 WHERE "Orders"."ShopId" = :shopId
                     AND "Orders"."createdAt" BETWEEN :startDate AND :endDate
+                    AND "Orders".status = 'completed'
                 GROUP BY date_trunc('month', "Orders"."createdAt")::date
                 ORDER BY period;
             `;
@@ -215,6 +217,7 @@ const getHistoricTopCategories = async (shopId, fromDate, toDate, granularity) =
             JOIN "Products" ON "OrderItems"."ProductId" = "Products"."id"
             WHERE "Orders"."ShopId" = :shopId
                 AND "Orders"."createdAt" BETWEEN :startDate AND :endDate
+                AND "Orders".status = 'completed'
             GROUP BY "Products"."category"
             ORDER BY SUM("OrderItems"."quantity" * "OrderItems"."priceAtTime") DESC
             LIMIT 5;
@@ -255,6 +258,7 @@ const getHistoricTopCategories = async (shopId, fromDate, toDate, granularity) =
             JOIN "Products" ON "OrderItems"."ProductId" = "Products"."id"
             WHERE "Orders"."ShopId" = :shopId
                 AND "Orders"."createdAt" BETWEEN :startDate AND :endDate
+                AND "Orders".status = 'completed'
                 AND "Products"."category" IN (:topCategories)
             GROUP BY period, "Products"."category"
             ORDER BY period;
