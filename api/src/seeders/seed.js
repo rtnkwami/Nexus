@@ -4,8 +4,7 @@ dotenv.config();
 import { sequelize } from '../models/index.js';
 
 import seedProducts from './products.seeder.js';
-import seedOrders from './orders.seeder.js';
-import seedOrderItems from './orderItems.seeder.js';
+import seedOrders from './ordersv2.seeders.js';
 import seedProductViews from './productViews.seeder.js';
 
 (async () => {
@@ -25,11 +24,6 @@ import seedProductViews from './productViews.seeder.js';
     console.log("🛒 Seeding Orders...");
     await seedOrders();
     console.log("✅ Orders seeded.");
-
-    // ORDER ITEMS
-    console.log("📑 Seeding Order Items...");
-    await seedOrderItems();
-    console.log("✅ Order Items seeded.");
 
     // PRODUCT VIEWS
     console.log("👀 Seeding Product Views...");
