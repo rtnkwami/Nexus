@@ -3,6 +3,7 @@ import Shop from "./Shop.js";
 import Product from "./Product.js";
 import Order from "./Order.js";
 import OrderItem from "./OrderItem.js";
+import ProductView from "./ProductView.js";
 import { sequelize } from "../config/dbConfig.js";
 
 User.hasOne(Shop);
@@ -25,6 +26,9 @@ Order.hasMany(OrderItem);
 
 OrderItem.belongsTo(Product);
 Product.hasMany(OrderItem);
+
+Product.hasMany(ProductView);
+ProductView.belongsTo(Product);
 
 export {
     sequelize,
