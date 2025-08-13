@@ -36,5 +36,6 @@ export {
     User,
     Product,
     Order,
-    OrderItem
+    OrderItem,
+    ProductView
 }

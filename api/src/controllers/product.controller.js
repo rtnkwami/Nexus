@@ -1,5 +1,5 @@
-import Product from "../models/Product.js";
-import { fn, col, where, Op } from "sequelize";
+import { Product, ProductView } from "../models/index.js";
+import { fn, col, Op } from "sequelize";
 
 export const getAllProducts = async (req, res) => {    
     const page = parseInt(req.query.page) || 1;
@@ -61,6 +61,8 @@ export const getOneProduct = async (req, res) => {
         if (!product) {
             return res.status(404).json({ message: "Product not found" });
         }
+
+        await product.createProductView();
 
         res.status(200).json({ product });
     } catch (error) {

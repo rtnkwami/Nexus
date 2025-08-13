@@ -10,9 +10,9 @@ const ProductView = sequelize.define('ProductView',
         },
         viewedAt: {
             type: DataTypes.DATE,
+            defaultValue: DataTypes.NOW,
             allowNull: false,
-            defaultValue: DataTypes.NOW
-        }
+        },
     },
     {
         tableName: 'ProductViews',
