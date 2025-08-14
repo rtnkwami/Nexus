@@ -39,6 +39,29 @@ export const salesPerformanceDashboard = async (req, res) => {
             dashboard: dashboardData
         });
     } catch (error) {
-        
+        console.error("Error getting Sales Performance Dashboard: ", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export const productInsightsDashboard = async (req, res) => {
+    try {
+        const shopId = await getUserShopId(req);
+        const fromDate = decodeURIComponent(req.query.fromDate);
+        const toDate = decodeURIComponent(req.query.toDate);
+
+        const dashboardData = await Analytics.getProductInsightsDashboard(
+            shopId,
+            fromDate,
+            toDate
+        );
+        console.log("Dashboard Data: ", dashboardData);
+
+        return res.status(200).json({
+            dashboard: dashboardData
+        });
+    } catch (error) {
+        console.error("Error getting Product Insights Dashboard: ", error);
+        res.status(500).json({ message: "Internal server error" });
     }
 }
