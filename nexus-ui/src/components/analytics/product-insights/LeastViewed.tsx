@@ -14,16 +14,21 @@ export default function LeastViewedProduct({ leastViewedProduct }) {
   }
 
   return (
-    <Card className="p-4">
+    <Card className="p-1.5">
       <CardContent className="flex flex-col space-y-2">
         <p className="text-sm text-muted-foreground">Least Viewed Product</p>
 
         <h2 className="text-lg font-semibold">{leastViewedProduct.product_name}</h2>
         {/* <p className="text-sm text-gray-500">Category: {topProduct.product_category}</p> */}
 
-        <p className={`text-2xl font-bold`}>
-          {leastViewedProduct.view_count} views
-        </p>
+        <div className="flex items-baseline space-x-2">
+            <span className="text-2xl font-bold">
+              {leastViewedProduct.view_count}
+            </span>
+            <span className="text-base text-muted-foreground">
+              views
+            </span>
+        </div>
       </CardContent>
     </Card>
   );

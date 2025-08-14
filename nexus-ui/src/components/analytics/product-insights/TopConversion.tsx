@@ -23,7 +23,7 @@ export default function TopConversionCard({ highestConversionProduct }) {
   const rate = parseFloat(highestConversionProduct.conversion_rate);
 
   return (
-    <Card className="p-4">
+    <Card className="p-1.5">
       <CardContent className="flex flex-col space-y-2">
         <p className="text-sm text-muted-foreground">Highest Conversion Rate</p>
 
