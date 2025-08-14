@@ -2,19 +2,44 @@ import { sequelize } from "../../../models/index.js";
 import { getLineGraphDateRange } from "../../../utils/getDateRange.js";
 
 export const getProductInsightsDashboard = async (shopId, fromDate, toDate) => {
-    const highestConversionProduct = await getHighestConversionProducts(shopId, fromDate, toDate, 'highest', 1);
+    const highestConversionProduct = await getHighestConversionProducts(
+        shopId,
+        fromDate,
+        toDate,
+        'conversion_rate',
+        'highest',
+        1
+    );
+    
+    const biggestOpportunity = await getHighestConversionProducts(
+        shopId,
+        fromDate,
+        toDate,
+        'missed_opportunity',
+        'highest',
+        1
+    );
+
     const mostViewedProduct = await getMostViewedProducts(shopId, fromDate, toDate, 'highest', 1);
     const leastViewedProduct =  await getMostViewedProducts(shopId, fromDate, toDate, 'lowest', 1);
 
     return {
         highestConversionProduct: highestConversionProduct[0],
         mostViewedProduct: mostViewedProduct[0],
-        leastViewedProduct: leastViewedProduct[0]
+        leastViewedProduct: leastViewedProduct[0],
+        biggestOpportunity: biggestOpportunity[0]
     }
 };
 
 
-const getHighestConversionProducts = async (shopId, fromDate, toDate, ranking = 'highest', limit = 5) => {
+const getHighestConversionProducts = async (
+    shopId,
+    fromDate,
+    toDate,
+    sortBy,
+    ranking = 'highest',
+    limit = 5
+) => {
     try {
         const { startDate, endDate } = getLineGraphDateRange(fromDate, toDate);
         const order =
@@ -35,7 +60,7 @@ const getHighestConversionProducts = async (shopId, fromDate, toDate, ranking = 
                 INNER JOIN "ProductViews" pv ON p.id = pv."ProductId"
                 WHERE p."ShopId" = :shopId
                     AND pv."viewedAt" BETWEEN :startDate AND :endDate
-                GROUP BY p.id, p.name
+                GROUP BY p.id, p.name, p.category
             ),
             product_purchases AS (
                 SELECT 
@@ -59,10 +84,28 @@ const getHighestConversionProducts = async (shopId, fromDate, toDate, ranking = 
                     WHEN pv.view_count > 0 THEN 
                         ROUND((COALESCE(pp.purchase_count, 0)::DECIMAL / pv.view_count::DECIMAL) * 100, 2)
                     ELSE 0 
-                END as conversion_rate
+                END as conversion_rate,
+                -- Missed Opportunity: simple missed sales count
+                (pv.view_count - COALESCE(pp.purchase_count, 0)) as missed_opportunity
             FROM product_views pv
             LEFT JOIN product_purchases pp ON pv.product_id = pp.product_id
-            ORDER BY conversion_rate ${order}
+            ORDER BY 
+                CASE 
+                    WHEN :sortBy = 'conversion_rate' THEN 
+                        CASE 
+                            WHEN pv.view_count > 0 THEN 
+                                ROUND((COALESCE(pp.purchase_count, 0)::DECIMAL / pv.view_count::DECIMAL) * 100, 2)
+                            ELSE 0 
+                        END
+                    WHEN :sortBy = 'missed_opportunity' THEN 
+                        (pv.view_count - COALESCE(pp.purchase_count, 0))
+                    ELSE 
+                        CASE 
+                            WHEN pv.view_count > 0 THEN 
+                                ROUND((COALESCE(pp.purchase_count, 0)::DECIMAL / pv.view_count::DECIMAL) * 100, 2)
+                            ELSE 0 
+                        END
+                END ${order}
             LIMIT ${limit};
         `;
         
@@ -71,11 +114,11 @@ const getHighestConversionProducts = async (shopId, fromDate, toDate, ranking = 
                 replacements: {
                     shopId,
                     startDate,
-                    endDate
+                    endDate,
+                    sortBy
                 }
         });
 
-        console.log("Conversion Rankings: ", conversionRankings);
         return conversionRankings
 
     } catch (error) {
