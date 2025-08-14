@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import { getAccessToken } from "@auth0/nextjs-auth0";
 import TopConversionCard from "@/components/analytics/product-insights/TopConversion";
 import MostViewedCard from "@/components/analytics/product-insights/MostViewed";
+import LeastViewedCard from "@/components/analytics/product-insights/LeastViewed";
 
 export default function ProductInsights() {
   const [data, setData] = useState<any>(null);
@@ -102,15 +103,16 @@ export default function ProductInsights() {
       )}
 
       {data && !loading && !error && (
-        <div className="p-6">
-          <div  className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
+        <div className="p-2">
+          <div  className="p-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
             <div className="col-span-1 sm:col-span-1 lg:col-span-2">
-                <TopConversionCard rankings={data.dashboard.conversionRankings} />
+                <TopConversionCard highestConversionProduct={data.dashboard.highestConversionProduct} />
             </div>
             <div className="col-span-1 sm:col-span-1 lg:col-span-2">
-                <MostViewedCard rankings={data.dashboard.viewRankings} />
+                <MostViewedCard mostViewedProduct={data.dashboard.mostViewedProduct} />
             </div>
             <div className="col-span-1 sm:col-span-1 lg:col-span-2">
+                <LeastViewedCard leastViewedProduct={data.dashboard.leastViewedProduct} />
             </div>
           </div>
           
