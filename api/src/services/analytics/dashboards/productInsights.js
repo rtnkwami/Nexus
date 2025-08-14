@@ -2,12 +2,14 @@ import { sequelize } from "../../../models/index.js";
 import { getLineGraphDateRange } from "../../../utils/getDateRange.js";
 
 export const getProductInsightsDashboard = async (shopId, fromDate, toDate) => {
-    const conversionRankings = await getHighestConversionProducts(shopId, fromDate, toDate);
-    const viewRankings = await getMostViewedProducts(shopId, fromDate, toDate);
+    const highestConversionProduct = await getHighestConversionProducts(shopId, fromDate, toDate, 'highest', 1);
+    const mostViewedProduct = await getMostViewedProducts(shopId, fromDate, toDate, 'highest', 1);
+    const leastViewedProduct =  await getMostViewedProducts(shopId, fromDate, toDate, 'lowest', 1);
 
     return {
-        conversionRankings,
-        viewRankings
+        highestConversionProduct: highestConversionProduct[0],
+        mostViewedProduct: mostViewedProduct[0],
+        leastViewedProduct: leastViewedProduct[0]
     }
 };
 
