@@ -2,6 +2,14 @@ import { faker } from '@faker-js/faker';
 import { Order, OrderItem, Product, Shop, User } from '../models/index.js';
 import { v4 as uuidv4 } from 'uuid';
 
+// Use the same date range as ProductViews seeder
+function randomPastDate() {
+  const now = new Date();
+  const pastYear = new Date();
+  pastYear.setFullYear(now.getFullYear() - 1);
+  return new Date(pastYear.getTime() + Math.random() * (now.getTime() - pastYear.getTime()));
+}
+
 export default async function seedOrders(){
 
     const users = await User.findAll({
@@ -51,15 +59,16 @@ export default async function seedOrders(){
         });
       }
 
-      // 5. Create the order with the calculated total
+      // 5. Create the order with consistent date range (same as ProductViews)
+      const orderDate = randomPastDate();
       ordersToCreate.push({
         id: orderId,
         status: faker.helpers.arrayElement(['pending', 'completed', 'cancelled']),
         total: orderTotal.toFixed(2),
         UserId: randomUser.id,
         ShopId: shopIdForOrder,
-        createdAt: faker.date.past(),
-        updatedAt: faker.date.recent(),
+        createdAt: orderDate,
+        updatedAt: orderDate, // Keep them the same for simplicity
       });
       
       // 6. Add the items for this order to the main list
@@ -68,4 +77,5 @@ export default async function seedOrders(){
     
     await Order.bulkCreate(ordersToCreate);
     await OrderItem.bulkCreate(orderItemsToCreate);
+    console.log(`Seeded ${ordersToCreate.length} orders with ${orderItemsToCreate.length} order items`);
 };

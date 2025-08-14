@@ -109,10 +109,10 @@ export default function ShopLayout({ children }: { children: ReactNode }) {
                 Sales Performance
               </NavLink>
               <NavLink 
-                href="/shop/analytics/products"
+                href="/shop/analytics/product-insights"
                 icon={Package}
                 onClick={closeMobileMenu}
-                isActive={pathname === "/shop/analytics/products"}
+                isActive={pathname === "/shop/analytics/product-insights"}
               >
                 Product Insights
               </NavLink>
