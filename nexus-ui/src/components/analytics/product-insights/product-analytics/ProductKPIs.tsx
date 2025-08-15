@@ -15,35 +15,31 @@ function ProductKPIs({ revenue, unitsSold, orders, conversion }) {
       <MetricCard
         title="Total Revenue"
         value={revenue}
-        formatValue={(val) => `$${parseFloat(val.toString()).toLocaleString()}`}
-        icon="💰"
+        formatValue={(val) => `₵${parseFloat(val.toString()).toLocaleString()}`}
         iconBgColor="bg-green-100 dark:bg-green-900/30"
-        valueColor="text-green-600"
+        valueColor="text-black"
       />
       
       <MetricCard
         title="Units Sold"
         value={unitsSold}
         formatValue={(val) => parseInt(val.toString()).toLocaleString()}
-        icon="📦"
         iconBgColor="bg-blue-100 dark:bg-blue-900/30"
-        valueColor="text-blue-600"
+        valueColor="text-black"
       />
       
       <MetricCard
         title="Total Orders"
         value={orders}
         formatValue={(val) => parseInt(val.toString()).toLocaleString()}
-        icon="🛒"
         iconBgColor="bg-purple-100 dark:bg-purple-900/30"
-        valueColor="text-purple-600"
+        valueColor="text-black"
       />
       
       <MetricCard
         title="Conversion Rate"
         value={conversion}
         formatValue={(val) => `${parseFloat(val.toString()).toFixed(2)}%`}
-        icon="📈"
         iconBgColor="bg-green-100 dark:bg-green-900/30"
         valueColor={getConversionRateColor(parseFloat(conversion))}
       />

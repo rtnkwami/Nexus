@@ -16,7 +16,6 @@ export default function MetricCard({
   title,
   value,
   subtitle,
-  icon = "📊",
   iconBgColor = "bg-blue-100 dark:bg-blue-900/30",
   valueColor = "text-blue-600",
   formatValue,
@@ -31,9 +30,6 @@ export default function MetricCard({
       <CardContent className="p-4">
         <div className="flex items-start space-x-4">
           <div className="flex-shrink-0">
-            <div className={`w-12 h-12 ${iconBgColor} rounded-lg flex items-center justify-center`}>
-              <span className="text-2xl">{icon}</span>
-            </div>
           </div>
           <div className="flex-1 min-w-0">
             <h3 className={`text-xl font-semibold text-gray-900 dark:text-white mb-2 transition-colors ${isClickable ? 'group-hover:text-blue-600' : ''}`}>
