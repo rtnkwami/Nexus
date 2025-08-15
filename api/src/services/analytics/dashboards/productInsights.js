@@ -1,4 +1,5 @@
 import { sequelize } from "../../../models/index.js";
+import { fn } from "sequelize";
 import { getLineGraphDateRange } from "../../../utils/getDateRange.js";
 
 export const getProductInsightsDashboard = async (shopId, fromDate, toDate) => {
@@ -30,6 +31,14 @@ export const getProductInsightsDashboard = async (shopId, fromDate, toDate) => {
         biggestOpportunity: biggestOpportunity[0]
     }
 };
+
+export const getOneProductAnalytics = async (shopId, fromDate, toDate, productId) => {
+    const revenue = await getProductRevenue(shopId, fromDate, toDate, productId);
+
+    return {
+        revenue: revenue.total_revenue
+    }
+}
 
 
 const getHighestConversionProducts = async (
@@ -168,5 +177,43 @@ const getMostViewedProducts = async (shopId, fromDate, toDate, ranking = 'highes
     } catch (error) {
         console.error("Error fetching most viewed products:", error);
         return [];
+    }
+}
+
+
+const getProductRevenue = async (shopId, fromDate, toDate, productId) => {
+    try {
+        const { startDate, endDate } = getLineGraphDateRange(fromDate, toDate);
+    
+        const query =  `
+            SELECT 
+                COALESCE(SUM(oi.quantity * oi."priceAtTime"), 0) AS total_revenue
+            FROM "OrderItems" oi
+            JOIN "Orders" o 
+                ON oi."OrderId" = o.id
+            JOIN "Products" p
+                ON oi."ProductId" = p.id
+            WHERE p.id = :productId
+            AND p."ShopId" = :shopId
+            AND o.status = 'completed'
+            AND o."createdAt" BETWEEN :startDate AND :endDate;
+        `;
+
+        const revenue = await sequelize.query(query, {
+                type: sequelize.QueryTypes.SELECT,
+                replacements: {
+                    shopId,
+                    startDate,
+                    endDate,
+                    productId
+                }
+        });
+
+        console.log(revenue);
+        return revenue[0];
+        
+    } catch (error) {
+        console.error(`Error fetching ${productId} revenue`, error);
+        return 0;
     }
 }
