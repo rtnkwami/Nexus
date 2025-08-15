@@ -53,7 +53,8 @@ export function ProductsPerformanceTable({ productsData, title = "Product Perfor
                     </div>
                   </td>
                   <td className="text-right py-3 px-2 font-mono text-gray-700">
-                    ${parseFloat(product.totalRevenue || 0).toLocaleString(undefined, {
+                    <span className="text-xs align-top">&#8373;</span>
+                    {parseFloat(product.totalRevenue || 0).toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2
                     })}

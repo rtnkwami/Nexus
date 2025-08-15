@@ -1,11 +1,22 @@
 // components/TotalRevenueCard.jsx
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function TotalRevenueCard({ revenue, percentageChange, trend, periodLabel }) {
-  const TrendIcon = trend === "up" ? ArrowUpRight : ArrowDownRight;
-  const trendColor = trend === "up" ? "text-green-600" : "text-red-600";
+  let TrendIcon;
+  let trendColor;
+
+  if (trend === "up") {
+    TrendIcon = ArrowUpRight;
+    trendColor = "text-green-600";
+  } else if (trend === "down") {
+    TrendIcon = ArrowDownRight;
+    trendColor = "text-red-600";
+  } else if (trend === "stable") {
+    TrendIcon = Minus;
+    trendColor = "text-yellow-500";
+  }
 
   return (
     <Card className="p-4">
@@ -13,7 +24,7 @@ export default function TotalRevenueCard({ revenue, percentageChange, trend, per
         <p className="text-sm text-muted-foreground">Total Revenue</p>
 
         <div className="text-2xl font-bold tracking-tight">
-          &#8373;{revenue.toLocaleString(undefined, { minimumFractionDigits: 0 })}
+          &#8373;{Number(revenue).toLocaleString(undefined, { minimumFractionDigits: 0 })}
         </div>
 
         <div className="flex items-center space-x-2">
