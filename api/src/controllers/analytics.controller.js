@@ -7,7 +7,6 @@ export const overviewDashboard = async (req, res) => {
         const period = req.query.period;
 
         const dashboardData = await Analytics.getOverviewDashboard(shopId, period);
-        console.log("Dashboard Data: ", dashboardData);
 
         return res.status(200).json({
             dashboard: dashboardData
@@ -22,7 +21,6 @@ export const overviewDashboard = async (req, res) => {
 export const salesPerformanceDashboard = async (req, res) => {
     try {
         const shopId = await getUserShopId(req);
-        console.log(req.query.fromDate, req.query.toDate, req.query.granularity);
         const fromDate = decodeURIComponent(req.query.fromDate);
         const toDate = decodeURIComponent(req.query.toDate);
         const { granularity } = req.query;
@@ -33,7 +31,6 @@ export const salesPerformanceDashboard = async (req, res) => {
             toDate,
             granularity
         );
-        console.log("Dashboard Data: ", dashboardData);
 
         return res.status(200).json({
             dashboard: dashboardData
@@ -54,6 +51,28 @@ export const productInsightsDashboard = async (req, res) => {
             shopId,
             fromDate,
             toDate
+        );
+        return res.status(200).json({
+            dashboard: dashboardData
+        });
+    } catch (error) {
+        console.error("Error getting Product Insights Dashboard: ", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export const productAnalytics = async (req, res) => {
+    try {
+        const shopId = await getUserShopId(req);
+        const { productId } = req.params;
+        const fromDate = decodeURIComponent(req.query.fromDate);
+        const toDate = decodeURIComponent(req.query.toDate);
+
+        const dashboardData = await Analytics.getOneProductAnalytics(
+            shopId,
+            fromDate,
+            toDate,
+            productId
         );
         console.log("Dashboard Data: ", dashboardData);
 
