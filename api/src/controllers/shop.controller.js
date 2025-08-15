@@ -71,6 +71,32 @@ export const createShopProduct = async (req, res) => {
     }
 };
 
+
+export const searchSuggestions = async (req, res) => {
+    try {
+        const shopId =  await getUserShopId(req);
+        const q = req.query.q?.toString().toLowerCase() || "";
+        if (!q) return res.json([]);
+        const matches = await Product.findAll({
+                where: {
+                    ShopId: shopId,
+                    name: { [Op.iLike]: `%${q}%` },
+                },
+                attributes: ["name"],
+                limit: 5,
+                raw: true
+            });
+
+            console.log(matches);
+
+        res.json(matches);
+        
+    } catch (error) {
+        console.log('Error getting search suggestions', error)
+        return res.status(500);
+    }
+}
+
 export const getShopProducts = async (req, res) => {    
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
