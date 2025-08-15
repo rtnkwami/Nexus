@@ -3,17 +3,21 @@
 import { useState, useEffect } from "react";
 import SalesPerformanceFilter from "@/components/analytics/salesPerformance/SalesPerformanceFilter";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 import { getAccessToken } from "@auth0/nextjs-auth0";
 import TopConversionCard from "@/components/analytics/product-insights/TopConversion";
 import MostViewedCard from "@/components/analytics/product-insights/MostViewed";
 import LeastViewedCard from "@/components/analytics/product-insights/LeastViewed";
 import BiggestOpportunityCard from "@/components/analytics/product-insights/BiggestOpportunity";
 
+type TabType = "overview" | "analysis";
+
 export default function ProductInsights() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabType>("overview");
+  const [searchQuery, setSearchQuery] = useState("");
   const [filterParams, setFilterParams] = useState<{
     from: Date;
     to: Date;
@@ -62,29 +66,88 @@ export default function ProductInsights() {
     }
   };
 
+  const handleSearch = async () => {
+    if (activeTab === "analysis" && searchQuery.trim()) {
+      // TODO: Implement product-specific analytics API call
+      console.log("Searching for:", searchQuery);
+      // You'd call a different endpoint here for specific product analytics
+    }
+  };
+
   // Fetch data when filters change
   useEffect(() => {
-    if (filterParams) {
+    if (filterParams && activeTab === "overview") {
       fetchProductInsightsData(filterParams);
     }
-  }, [filterParams]);
+  }, [filterParams, activeTab]);
 
   return (
-    <div className="p-4">
-      <SalesPerformanceFilter onFilterChange={setFilterParams} />
+    <div className="p-6 max-w-7xl mx-auto">
+      {/* Header with Date Filter, Search, and Tabs */}
+      <div className="space-y-6 mb-8">
+        {/* Top Row: Toggle and Date Filter */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setActiveTab("overview")}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  activeTab === "overview"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                Overview
+              </button>
+              <button
+                onClick={() => setActiveTab("analysis")}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  activeTab === "analysis"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                Product Analysis
+              </button>
+            </div>
 
+          {/* Date Filter */}
+          <div className="flex-shrink-0">
+            <SalesPerformanceFilter onFilterChange={setFilterParams} />
+          </div>
+        </div>
+
+        {/* Search Bar - Only show for Product Analysis, centered */}
+        {activeTab === "analysis" && (
+          <div className="flex justify-center">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Enter product name or category..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none w-96"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Loading State */}
       {loading && (
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-6 h-6 animate-spin" />
-          <span className="ml-2">Loading product insights data...</span>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-6 h-6 animate-spin mr-3" />
+          <span className="text-gray-600">Loading product insights data...</span>
         </div>
       )}
 
+      {/* Error State */}
       {error && (
-        <div className="mt-4">
-          <Card className="p-6">
-            <CardContent>
-              <div className="text-center space-y-2">
+        <div className="mb-6">
+          <Card className="border-red-200">
+            <CardContent className="p-6">
+              <div className="text-center space-y-3">
                 <h3 className="font-semibold text-red-600">
                   Error Loading Data
                 </h3>
@@ -93,7 +156,7 @@ export default function ProductInsights() {
                   onClick={() =>
                     filterParams && fetchProductInsightsData(filterParams)
                   }
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Retry
                 </button>
@@ -103,24 +166,65 @@ export default function ProductInsights() {
         </div>
       )}
 
-      {data && !loading && !error && (
-        <div className="p-2">
-  <div className="p-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-    <div>
-      <TopConversionCard highestConversionProduct={data.dashboard.highestConversionProduct} />
-    </div>
-    <div>
-      <MostViewedCard mostViewedProduct={data.dashboard.mostViewedProduct} />
-    </div>
-    <div>
-      <LeastViewedCard leastViewedProduct={data.dashboard.leastViewedProduct} />
-    </div>
-    <div>
-      <BiggestOpportunityCard biggestOpportunity={data.dashboard.biggestOpportunity} />
-    </div>
-  </div>
-</div>
+      {/* Content based on active tab */}
+      {!loading && !error && (
+        <>
+          {activeTab === "overview" && data && (
+            <div className="space-y-8">
+              {/* Overview Cards - Docusaurus Style */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                {/* Top Row */}
+                <TopConversionCard
+                    highestConversionProduct={data.dashboard.highestConversionProduct} 
+                />
 
+                <MostViewedCard
+                  mostViewedProduct={data.dashboard.mostViewedProduct}
+                />
+
+                {/* Bottom Row */}
+                <LeastViewedCard
+                    leastViewedProduct={data.dashboard.leastViewedProduct}
+                />
+
+                <BiggestOpportunityCard 
+                    biggestOpportunity={data.dashboard.biggestOpportunity}
+                />
+              </div>
+            </div>
+          )}
+
+          {activeTab === "analysis" && (
+            <div className="space-y-6">
+              {searchQuery ? (
+                <div className="text-center py-12">
+                  <h3 className="text-lg font-semibold mb-2">
+                    Analytics for "{searchQuery}"
+                  </h3>
+                  <p className="text-gray-600 mb-6">
+                    Detailed analytics and charts would go here
+                  </p>
+                  {/* TODO: Add your detailed analytics components here */}
+                  <div className="bg-gray-50 rounded-lg p-8">
+                    <p className="text-gray-500">
+                      Product analytics dashboard coming soon...
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2 text-gray-600">
+                    Search for a Product
+                  </h3>
+                  <p className="text-gray-500">
+                    Enter a product name or category to view detailed analytics
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
