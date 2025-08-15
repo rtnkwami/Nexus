@@ -9,7 +9,6 @@ import TopConversionCard from "@/components/analytics/product-insights/TopConver
 import MostViewedCard from "@/components/analytics/product-insights/MostViewed";
 import LeastViewedCard from "@/components/analytics/product-insights/LeastViewed";
 import BiggestOpportunityCard from "@/components/analytics/product-insights/BiggestOpportunity";
-import { get } from "http";
 
 type TabType = "overview" | "analysis";
 
@@ -25,12 +24,15 @@ export default function ProductInsights() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [activeIndex, setActiveIndex] = useState<number>(-1);
 
   const [filterParams, setFilterParams] = useState<{
     from: Date;
     to: Date;
     granularity: string;
   } | null>(null);
+
+  const wasSelectionMade = useRef(false);
 
   useEffect(() => {
     const retrieveToken = async () => {
@@ -116,21 +118,26 @@ export default function ProductInsights() {
 
   // 🔹 NEW: debounce effect for search
   useEffect(() => {
+    if (wasSelectionMade.current) {
+      wasSelectionMade.current = false;
+      return;
+    }
+    
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       if (activeTab === "analysis") {
         fetchSuggestions(searchQuery);
       }
-    }, 100);
+    }, 300);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [searchQuery, activeTab]);
 
-  const handleSearch = async () => {
-    if (activeTab === "analysis" && searchQuery.trim()) {
-      console.log("Searching for:", searchQuery);
+  const handleSearch = async (query: string) => {
+    if (activeTab === "analysis" && query.trim()) {
+      console.log("Searching for:", query);
       // Call your detailed product analytics endpoint here
     }
   };
@@ -141,6 +148,36 @@ export default function ProductInsights() {
       fetchProductInsightsData(filterParams);
     }
   }, [filterParams, activeTab]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (suggestions.length === 0) return;
+
+  switch (e.key) {
+    case "ArrowDown":
+      e.preventDefault(); // Prevent cursor from moving in the input
+      setActiveIndex(prev => (prev >= suggestions.length - 1 ? 0 : prev + 1));
+      break;
+    case "ArrowUp":
+      e.preventDefault(); // Prevent cursor from moving in the input
+      setActiveIndex(prev => (prev <= 0 ? suggestions.length - 1 : prev - 1));
+      break;
+    case "Enter":
+      if (activeIndex !== -1) {
+        e.preventDefault();
+        const selectedSuggestion = suggestions[activeIndex];
+        wasSelectionMade.current = true;
+        setSearchQuery(selectedSuggestion.name);
+        setSuggestions([]);
+        handleSearch(selectedSuggestion.name);
+        setActiveIndex(-1); // Reset index
+      }
+      break;
+    case "Escape":
+      setSuggestions([]);
+      setActiveIndex(-1);
+      break;
+  }
+};
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -184,10 +221,11 @@ export default function ProductInsights() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Enter product name or category..."
+                placeholder="Enter a product name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                onKeyPress={(e) => e.key === "Enter" && handleSearch(searchQuery)}
+                onKeyDown={handleKeyDown}
                 className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none w-full"
               />
               {loadingSuggestions && (
@@ -203,11 +241,14 @@ export default function ProductInsights() {
                     <li
                       key={idx}
                       onClick={() => {
+                        wasSelectionMade.current = true;
                         setSearchQuery(item.name);
                         setSuggestions([]);
-                        handleSearch();
+                        handleSearch(item.name);
                       }}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                      className={`px-4 py-2 cursor-pointer ${
+                        idx === activeIndex ? "bg-gray-100" : "hover:bg-gray-100"
+                      }`}
                     >
                       {item.name}
                     </li>
