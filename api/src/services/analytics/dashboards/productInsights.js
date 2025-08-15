@@ -35,10 +35,12 @@ export const getProductInsightsDashboard = async (shopId, fromDate, toDate) => {
 export const getOneProductAnalytics = async (shopId, fromDate, toDate, productId) => {
     const revenue = await getProductRevenue(shopId, fromDate, toDate, productId);
     const unitSales = await getProductUnitSales(shopId, fromDate, toDate, productId);
+    const orders = await getProductOrdersCount(shopId, fromDate, toDate, productId);
 
     return {
         revenue: revenue.total_revenue,
-        unitsSold: unitSales.units_sold
+        unitsSold: unitSales.units_sold,
+        orders: orders.orders
     }
 }
 
@@ -220,7 +222,7 @@ const getProductRevenue = async (shopId, fromDate, toDate, productId) => {
     }
 }
 
-const getProductUnitSales = async(shopId, fromDate, toDate, productId) => {
+const getProductUnitSales = async (shopId, fromDate, toDate, productId) => {
     try {
         const { startDate, endDate } = getLineGraphDateRange(fromDate, toDate);
 
@@ -252,6 +254,42 @@ const getProductUnitSales = async(shopId, fromDate, toDate, productId) => {
 
     } catch (error) {
         console.error(`Error fetching ${productId} units sold`, error);
+        return 0;
+    }
+}
+
+const getProductOrdersCount = async (shopId, fromDate, toDate, productId) => {
+    try {
+        const { startDate, endDate } = getLineGraphDateRange(fromDate, toDate);
+
+        const query = `
+            SELECT 
+                COUNT(DISTINCT o.id) as orders
+            FROM "OrderItems" oi
+            JOIN "Orders" o 
+                ON oi."OrderId" = o.id
+            JOIN "Products" p
+                ON oi."ProductId" = p.id
+            WHERE p.id = :productId
+                AND p."ShopId" = :shopId
+                AND o.status = 'completed'
+                AND o."createdAt" BETWEEN :startDate AND :endDate;
+        `;
+
+        const orders = await sequelize.query(query, {
+                type: sequelize.QueryTypes.SELECT,
+                replacements: {
+                    shopId,
+                    startDate,
+                    endDate,
+                    productId
+                }
+        });
+
+        return orders[0];
+
+    } catch (error) {
+        console.error(`Error fetching ${productId} order appearances`, error);
         return 0;
     }
 }
