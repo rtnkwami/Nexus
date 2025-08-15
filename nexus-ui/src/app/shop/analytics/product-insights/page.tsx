@@ -136,13 +136,6 @@ export default function ProductInsights() {
     };
   }, [searchQuery, activeTab]);
 
-  const handleSearch = async (query: string) => {
-    if (activeTab === "analysis" && query.trim()) {
-      console.log("Searching for:", query);
-      // Call your detailed product analytics endpoint here
-    }
-  };
-
   // Fetch data when filters change
   useEffect(() => {
     if (filterParams && activeTab === "overview") {
@@ -189,18 +182,29 @@ export default function ProductInsights() {
   }
 };
 
-const fetchProductAnalytics = async (productId: string) => {
+const fetchProductAnalytics = async (productId: string, params: { from: Date; to: Date }) => {
   setLoading(true); 
   setError(null);
 
   try {
+
+    if (!params) {
+      setError("Please select a date range to see product analytics.");
+      setLoading(false);
+      return;
+    }
     // Note: You already have accessToken in state, no need to get it again
     if (!accessToken) throw new Error("Authentication token not found.");
+
+    const query = new URLSearchParams({
+      fromDate: params.from.toISOString(),
+      toDate: params.to.toISOString(),
+    }).toString();
 
     console.log(productId)
     
     // 💡 This is the new API call using the product ID
-    const res = await fetch(`http://localhost:5000/analytics/product-insights/${productId}`, {
+    const res = await fetch(`http://localhost:5000/analytics/product-insights/${productId}?${query}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
@@ -222,10 +226,10 @@ const fetchProductAnalytics = async (productId: string) => {
 };
 
 useEffect(() => {
-  if (selectedProduct) {
-    fetchProductAnalytics(selectedProduct.id);
+  if (selectedProduct && filterParams) {
+    fetchProductAnalytics(selectedProduct.id, filterParams);
   }
-}, [selectedProduct]);
+}, [selectedProduct, filterParams]);
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -272,7 +276,6 @@ useEffect(() => {
                 placeholder="Enter a product name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSearch(searchQuery)}
                 onKeyDown={handleKeyDown}
                 className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none w-full"
               />
@@ -293,7 +296,6 @@ useEffect(() => {
                         setSelectedProduct(item)
                         setSearchQuery(item.name);
                         setSuggestions([]);
-                        handleSearch(item.name);
                       }}
                       className={`px-4 py-2 cursor-pointer ${
                         idx === activeIndex ? "bg-gray-100" : "hover:bg-gray-100"
