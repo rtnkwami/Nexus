@@ -36,11 +36,13 @@ export const getOneProductAnalytics = async (shopId, fromDate, toDate, productId
     const revenue = await getProductRevenue(shopId, fromDate, toDate, productId);
     const unitSales = await getProductUnitSales(shopId, fromDate, toDate, productId);
     const orders = await getProductOrdersCount(shopId, fromDate, toDate, productId);
+    const conversionRate = await getProductConversionRate(shopId, fromDate, toDate, productId);
 
     return {
         revenue: revenue.total_revenue,
         unitsSold: unitSales.units_sold,
-        orders: orders.orders
+        orders: orders.orders,
+        conversion: conversionRate.conversion_rate
     }
 }
 
@@ -292,4 +294,68 @@ const getProductOrdersCount = async (shopId, fromDate, toDate, productId) => {
         console.error(`Error fetching ${productId} order appearances`, error);
         return 0;
     }
+}
+
+const getProductConversionRate = async (shopId, fromDate, toDate, productId) => {
+    try {
+        const { startDate, endDate } = getLineGraphDateRange(fromDate, toDate);
+
+        const query = `
+            WITH product_views AS (
+                SELECT 
+                    p.id as product_id,
+                    p.name as product_name,
+                    p.category as product_category,
+                    COUNT(pv.id) as view_count
+                FROM "Products" p
+                INNER JOIN "ProductViews" pv ON p.id = pv."ProductId"
+                WHERE p."ShopId" = :shopId
+                    AND p.id = :productId
+                    AND pv."viewedAt" BETWEEN :startDate AND :endDate
+                GROUP BY p.id, p.name, p.category
+            ),
+            product_purchases AS (
+                SELECT 
+                    p.id as product_id,
+                    p.name as product_name,
+                    COUNT(DISTINCT o.id) as purchase_count
+                FROM "Products" p
+                INNER JOIN "OrderItems" oi ON p.id = oi."ProductId"
+                INNER JOIN "Orders" o ON oi."OrderId" = o.id
+                WHERE p."ShopId" = :shopId
+                    AND p.id = :productId
+                    AND o."createdAt" BETWEEN :startDate AND :endDate
+                GROUP BY p.id, p.name
+            )
+            SELECT 
+                pv.product_id,
+                pv.product_name,
+                pv.product_category,
+                pv.view_count,
+                COALESCE(pp.purchase_count, 0) as purchase_count,
+                CASE 
+                    WHEN pv.view_count > 0 THEN 
+                        ROUND((COALESCE(pp.purchase_count, 0)::DECIMAL / pv.view_count::DECIMAL) * 100, 2)
+                    ELSE 0 
+                END as conversion_rate
+            FROM product_views pv
+            LEFT JOIN product_purchases pp ON pv.product_id = pp.product_id;
+        `;
+        
+        const conversionRate = await sequelize.query(query, {
+                type: sequelize.QueryTypes.SELECT,
+                replacements: {
+                    shopId,
+                    startDate,
+                    endDate,
+                    productId
+                }
+        });
+        console.log(conversionRate);
+        return conversionRate[0];
+
+    } catch (error) {
+        console.error(`Error fetching ${productId} order appearances`, error);
+        return 0;
+    }   
 }
