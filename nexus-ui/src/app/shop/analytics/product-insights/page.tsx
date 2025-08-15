@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import SalesPerformanceFilter from "@/components/analytics/salesPerformance/SalesPerformanceFilter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, Search } from "lucide-react";
@@ -9,6 +9,7 @@ import TopConversionCard from "@/components/analytics/product-insights/TopConver
 import MostViewedCard from "@/components/analytics/product-insights/MostViewed";
 import LeastViewedCard from "@/components/analytics/product-insights/LeastViewed";
 import BiggestOpportunityCard from "@/components/analytics/product-insights/BiggestOpportunity";
+import { get } from "http";
 
 type TabType = "overview" | "analysis";
 
@@ -18,11 +19,31 @@ export default function ProductInsights() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>("overview");
   const [searchQuery, setSearchQuery] = useState("");
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+
+  // 🔹 NEW: suggestion state + debounce ref
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
   const [filterParams, setFilterParams] = useState<{
     from: Date;
     to: Date;
     granularity: string;
   } | null>(null);
+
+  useEffect(() => {
+    const retrieveToken = async () => {
+      try {
+        const token = await getAccessToken(); // From your auth utility
+        setAccessToken(token);
+      } catch (err) {
+        console.error("Failed to get access token", err);
+      }
+    };
+
+    retrieveToken();
+  }, []);
 
   const fetchProductInsightsData = async (params: {
     from: Date;
@@ -65,12 +86,52 @@ export default function ProductInsights() {
       setLoading(false);
     }
   };
+  
+  // 🔹 NEW: fetch suggestions for search
+  const fetchSuggestions = async (query: string) => {
+    if (!accessToken || !query.trim()) {
+      setSuggestions([]);
+      return;
+    }
+    try {
+      setLoadingSuggestions(true);
+      const res = await fetch(`http://localhost:5000/shops/search-suggestions?q=${encodeURIComponent(query)}`,
+          {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (!res.ok) throw new Error("Failed to fetch suggestions");
+      const data = await res.json();
+      setSuggestions(data);
+    } catch (err) {
+      console.error(err);
+      setSuggestions([]);
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
+
+  // 🔹 NEW: debounce effect for search
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      if (activeTab === "analysis") {
+        fetchSuggestions(searchQuery);
+      }
+    }, 100);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [searchQuery, activeTab]);
 
   const handleSearch = async () => {
     if (activeTab === "analysis" && searchQuery.trim()) {
-      // TODO: Implement product-specific analytics API call
       console.log("Searching for:", searchQuery);
-      // You'd call a different endpoint here for specific product analytics
+      // Call your detailed product analytics endpoint here
     }
   };
 
@@ -88,27 +149,27 @@ export default function ProductInsights() {
         {/* Top Row: Toggle and Date Filter */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex bg-gray-100 rounded-lg p-1">
-              <button
-                onClick={() => setActiveTab("overview")}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                  activeTab === "overview"
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                Overview
-              </button>
-              <button
-                onClick={() => setActiveTab("analysis")}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                  activeTab === "analysis"
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                Product Analysis
-              </button>
-            </div>
+            <button
+              onClick={() => setActiveTab("overview")}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                activeTab === "overview"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Overview
+            </button>
+            <button
+              onClick={() => setActiveTab("analysis")}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                activeTab === "analysis"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Product Analysis
+            </button>
+          </div>
 
           {/* Date Filter */}
           <div className="flex-shrink-0">
@@ -116,10 +177,10 @@ export default function ProductInsights() {
           </div>
         </div>
 
-        {/* Search Bar - Only show for Product Analysis, centered */}
+        {/* Search Bar - Only show for Product Analysis */}
         {activeTab === "analysis" && (
-          <div className="flex justify-center">
-            <div className="relative">
+          <div className="flex justify-center relative">
+            <div className="relative w-96">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
@@ -127,8 +188,32 @@ export default function ProductInsights() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-                className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none w-96"
+                className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none w-full"
               />
+              {loadingSuggestions && (
+                <div className="absolute right-3 top-2 text-sm text-gray-400">
+                  Loading...
+                </div>
+              )}
+
+              {/* Suggestion dropdown */}
+              {suggestions.length > 0 && (
+                <ul className="absolute mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-md z-10">
+                  {suggestions.map((item, idx) => (
+                    <li
+                      key={idx}
+                      onClick={() => {
+                        setSearchQuery(item.name);
+                        setSuggestions([]);
+                        handleSearch();
+                      }}
+                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                    >
+                      {item.name}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         )}
@@ -171,25 +256,11 @@ export default function ProductInsights() {
         <>
           {activeTab === "overview" && data && (
             <div className="space-y-8">
-              {/* Overview Cards - Docusaurus Style */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
-                {/* Top Row */}
-                <TopConversionCard
-                    highestConversionProduct={data.dashboard.highestConversionProduct} 
-                />
-
-                <MostViewedCard
-                  mostViewedProduct={data.dashboard.mostViewedProduct}
-                />
-
-                {/* Bottom Row */}
-                <LeastViewedCard
-                    leastViewedProduct={data.dashboard.leastViewedProduct}
-                />
-
-                <BiggestOpportunityCard 
-                    biggestOpportunity={data.dashboard.biggestOpportunity}
-                />
+                <TopConversionCard highestConversionProduct={data.dashboard.highestConversionProduct} />
+                <MostViewedCard mostViewedProduct={data.dashboard.mostViewedProduct} />
+                <LeastViewedCard leastViewedProduct={data.dashboard.leastViewedProduct} />
+                <BiggestOpportunityCard biggestOpportunity={data.dashboard.biggestOpportunity} />
               </div>
             </div>
           )}
@@ -204,7 +275,6 @@ export default function ProductInsights() {
                   <p className="text-gray-600 mb-6">
                     Detailed analytics and charts would go here
                   </p>
-                  {/* TODO: Add your detailed analytics components here */}
                   <div className="bg-gray-50 rounded-lg p-8">
                     <p className="text-gray-500">
                       Product analytics dashboard coming soon...
