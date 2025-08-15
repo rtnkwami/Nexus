@@ -82,7 +82,7 @@ export const searchSuggestions = async (req, res) => {
                     ShopId: shopId,
                     name: { [Op.iLike]: `%${q}%` },
                 },
-                attributes: ["name"],
+                attributes: ["id", "name"],
                 limit: 5,
                 raw: true
             });
