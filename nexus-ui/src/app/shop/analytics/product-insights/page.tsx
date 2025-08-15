@@ -9,11 +9,13 @@ import TopConversionCard from "@/components/analytics/product-insights/TopConver
 import MostViewedCard from "@/components/analytics/product-insights/MostViewed";
 import LeastViewedCard from "@/components/analytics/product-insights/LeastViewed";
 import BiggestOpportunityCard from "@/components/analytics/product-insights/BiggestOpportunity";
+import { ProductKPIs } from "@/components/analytics/product-insights/product-analytics/ProductKPIs";
 
 type TabType = "overview" | "analysis";
 
 export default function ProductInsights() {
   const [data, setData] = useState<any>(null);
+  const [productAnalytics, setProductAnalytics] = useState<any>(null); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>("overview");
@@ -80,7 +82,6 @@ export default function ProductInsights() {
       }
 
       const result = await res.json();
-      console.log(result);
       setData(result);
     } catch (err: any) {
       console.error("Failed to fetch product insights data:", err);
@@ -200,8 +201,6 @@ const fetchProductAnalytics = async (productId: string, params: { from: Date; to
       fromDate: params.from.toISOString(),
       toDate: params.to.toISOString(),
     }).toString();
-
-    console.log(productId)
     
     // 💡 This is the new API call using the product ID
     const res = await fetch(`http://localhost:5000/analytics/product-insights/${productId}?${query}`, {
@@ -216,7 +215,8 @@ const fetchProductAnalytics = async (productId: string, params: { from: Date; to
     }
 
     const result = await res.json();
-    setData(result); // Update your main data state with the new analytics
+    console.log(result);
+    setProductAnalytics(result); // Update your main data state with the new analytics
   } catch (err: any) {
     console.error("Failed to fetch product analytics:", err);
     setError(err.message || "Unknown error");
@@ -359,28 +359,30 @@ useEffect(() => {
 
           {activeTab === "analysis" && (
             <div className="space-y-6">
-              {searchQuery ? (
-                <div className="text-center py-12">
-                  <h3 className="text-lg font-semibold mb-2">
-                    Analytics for "{searchQuery}"
+              {/* ✅ Render this block when you have a selected product AND the data for it */}
+              {selectedProduct && productAnalytics ? (
+                <div>
+                  <h3 className="text-lg font-semibold mb-2 text-center">
+                    Analytics for &quot;{selectedProduct.name}&quot;
                   </h3>
-                  <p className="text-gray-600 mb-6">
-                    Detailed analytics and charts would go here
-                  </p>
-                  <div className="bg-gray-50 rounded-lg p-8">
-                    <p className="text-gray-500">
-                      Product analytics dashboard coming soon...
-                    </p>
-                  </div>
+                  {/* ✅ Pass the fetched data into your component's props */}
+                  <ProductKPIs 
+                    revenue={productAnalytics.dashboard.revenue}
+                    unitsSold={productAnalytics.dashboard.unitsSold}
+                    orders={productAnalytics.dashboard.orders}
+                    conversion={productAnalytics.dashboard.conversion} 
+                  />
+                  {/* You can add other components that consume 'data' here, like charts */}
                 </div>
               ) : (
+                // Show the initial "Search for a Product" message if no product is selected
                 <div className="text-center py-12">
                   <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2 text-gray-600">
                     Search for a Product
                   </h3>
                   <p className="text-gray-500">
-                    Enter a product name or category to view detailed analytics
+                    Enter a product name to view detailed analytics.
                   </p>
                 </div>
               )}
