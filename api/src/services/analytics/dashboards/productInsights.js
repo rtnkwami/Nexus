@@ -34,9 +34,11 @@ export const getProductInsightsDashboard = async (shopId, fromDate, toDate) => {
 
 export const getOneProductAnalytics = async (shopId, fromDate, toDate, productId) => {
     const revenue = await getProductRevenue(shopId, fromDate, toDate, productId);
+    const unitSales = await getProductUnitSales(shopId, fromDate, toDate, productId);
 
     return {
-        revenue: revenue.total_revenue
+        revenue: revenue.total_revenue,
+        unitsSold: unitSales.units_sold
     }
 }
 
@@ -214,6 +216,42 @@ const getProductRevenue = async (shopId, fromDate, toDate, productId) => {
         
     } catch (error) {
         console.error(`Error fetching ${productId} revenue`, error);
+        return 0;
+    }
+}
+
+const getProductUnitSales = async(shopId, fromDate, toDate, productId) => {
+    try {
+        const { startDate, endDate } = getLineGraphDateRange(fromDate, toDate);
+
+        const query = `
+            SELECT 
+                COALESCE(SUM(oi.quantity), 0) AS units_sold
+            FROM "OrderItems" oi
+            JOIN "Orders" o 
+                ON oi."OrderId" = o.id
+            JOIN "Products" p
+                ON oi."ProductId" = p.id
+            WHERE p.id = :productId
+                AND p."ShopId" = :shopId
+                AND o.status = 'completed'
+                AND o."createdAt" BETWEEN :startDate AND :endDate;
+        `;
+        
+        const unitSales = await sequelize.query(query, {
+                type: sequelize.QueryTypes.SELECT,
+                replacements: {
+                    shopId,
+                    startDate,
+                    endDate,
+                    productId
+                }
+        });
+
+        return unitSales[0];
+
+    } catch (error) {
+        console.error(`Error fetching ${productId} units sold`, error);
         return 0;
     }
 }
