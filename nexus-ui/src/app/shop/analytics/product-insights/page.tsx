@@ -19,6 +19,7 @@ export default function ProductInsights() {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
   const [searchQuery, setSearchQuery] = useState("");
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<{ id: string; name: string } | null>(null);
 
   // 🔹 NEW: suggestion state + debounce ref
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -162,14 +163,23 @@ export default function ProductInsights() {
       setActiveIndex(prev => (prev <= 0 ? suggestions.length - 1 : prev - 1));
       break;
     case "Enter":
+      e.preventDefault();
+      let productToSearch;
+
       if (activeIndex !== -1) {
-        e.preventDefault();
-        const selectedSuggestion = suggestions[activeIndex];
-        wasSelectionMade.current = true;
-        setSearchQuery(selectedSuggestion.name);
+        // User selected an item with arrow keys
+        productToSearch = suggestions[activeIndex];
+      } else if (suggestions.length > 0) {
+        // User didn't select but pressed Enter, so we default to the top suggestion
+        productToSearch = suggestions[0];
+      }
+
+      if (productToSearch) {
+        setSearchQuery(productToSearch.name);
+        setSelectedProduct(productToSearch);
         setSuggestions([]);
-        handleSearch(selectedSuggestion.name);
-        setActiveIndex(-1); // Reset index
+        setActiveIndex(-1);
+        wasSelectionMade.current = true;
       }
       break;
     case "Escape":
@@ -178,6 +188,44 @@ export default function ProductInsights() {
       break;
   }
 };
+
+const fetchProductAnalytics = async (productId: string) => {
+  setLoading(true); 
+  setError(null);
+
+  try {
+    // Note: You already have accessToken in state, no need to get it again
+    if (!accessToken) throw new Error("Authentication token not found.");
+
+    console.log(productId)
+    
+    // 💡 This is the new API call using the product ID
+    const res = await fetch(`http://localhost:5000/analytics/product-insights/${productId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
+    const result = await res.json();
+    setData(result); // Update your main data state with the new analytics
+  } catch (err: any) {
+    console.error("Failed to fetch product analytics:", err);
+    setError(err.message || "Unknown error");
+  } finally {
+    setLoading(false);
+  }
+};
+
+useEffect(() => {
+  if (selectedProduct) {
+    fetchProductAnalytics(selectedProduct.id);
+  }
+}, [selectedProduct]);
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -242,6 +290,7 @@ export default function ProductInsights() {
                       key={idx}
                       onClick={() => {
                         wasSelectionMade.current = true;
+                        setSelectedProduct(item)
                         setSearchQuery(item.name);
                         setSuggestions([]);
                         handleSearch(item.name);
