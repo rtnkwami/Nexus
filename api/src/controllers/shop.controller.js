@@ -257,24 +257,30 @@ export const getShopOrders = async (req, res) => {
 };
 
 export const getOneShopOrder = async (req, res) => {
-    const { orderId } = req.params;
-
     try {
-        const order = await Order.findByPk(orderId, {
-            include: {
-                model: Product,
-                attributes: ['id', 'name', 'category'],
-                through: {
-                    attributes: ['quantity', 'priceAtTime']
-                }
+        const { orderId } = req.params;
+
+        const order = await Order.findByPk(orderId);
+        if (!order){ return res.status(404).json({ message: "Order doesn't exist" }) }
+
+        const orderProducts = await order.getProducts({
+            attributes: ['id', 'name', 'category'],
+            through: {
+                attributes: ['quantity', 'priceAtTime']
             }
         });
 
-        if (order) {
-            res.status(200).json({ order });
-        } else {
-            res.status(404).json({ message: "Order not found" });
-        }
+        const cleanProducts = orderProducts.map(product => {
+            return {
+                id: product.id,
+                name: product.name,
+                category: product.category,
+                quantity: product.OrderItem.quantity,
+                priceAtTime: product.OrderItem.priceAtTime
+            };
+        });
+
+        return res.status(200).json({ order, products: cleanProducts });
 
     } catch (error) {
         console.error(`Error getting order ${ orderId }: `, error);
