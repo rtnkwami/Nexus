@@ -27,9 +27,8 @@ interface Order {
 }
 
 // Remove the props interface since we're getting orderId from params
-export default function OrderDetailsPage({ homeUrl }) {
-  const params = useParams(); // Get route parameters
-  const orderId = params.id as string; // Extract id from params (folder name is [id])
+export default function OrderDetailsPage({ homeUrl, fetchUrl }) {
+  const { id } = useParams() // Extract id from params (folder name is [id])
   
   const [order, setOrder] = useState<Order | null>(null);
   const [products, setProducts] = useState<OrderProduct[]>([]);
@@ -37,17 +36,17 @@ export default function OrderDetailsPage({ homeUrl }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (orderId) {
+    if (id) {
       fetchOrderDetails();
     }
-  }, [orderId]);
+  }, [id]);
 
   const fetchOrderDetails = async () => {
     try {
       setIsLoading(true);
       const token = await getAccessToken();
       
-      const response = await fetch(`http://localhost:5000/users/orders/${orderId}`, {
+      const response = await fetch(`${fetchUrl}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -88,7 +87,7 @@ export default function OrderDetailsPage({ homeUrl }) {
   };
 
   // Add loading state for when orderId is not available yet
-  if (!orderId) {
+  if (!id) {
     return (
       <div className="container mx-auto py-8">
         <div className="flex items-center justify-center h-64">

@@ -7,7 +7,7 @@ export default function OrderDetailsRoute() {
  const { id } = useParams();
  
  return <OrderDetailsPage 
-            orderId={id} 
             homeUrl={"/shop/orders"}
+            fetchUrl={`http://localhost:5000/shops/orders/${id}`}
         />;
 }
