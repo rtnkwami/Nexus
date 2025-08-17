@@ -71,6 +71,8 @@ export default function ProductInsights() {
         granularity: params.granularity,
       }).toString();
 
+      console.log(query);
+
       const res = await fetch(
         `http://localhost:5000/analytics/product-insights?${query}`,
         {
@@ -187,7 +189,7 @@ export default function ProductInsights() {
   }
 };
 
-const fetchProductAnalytics = async (productId: string, params: { from: Date; to: Date }) => {
+const fetchProductAnalytics = async (productId: string, params: { from: Date; to: Date, granularity: string }) => {
   setLoading(true); 
   setError(null);
 
@@ -204,6 +206,7 @@ const fetchProductAnalytics = async (productId: string, params: { from: Date; to
     const query = new URLSearchParams({
       fromDate: params.from.toISOString(),
       toDate: params.to.toISOString(),
+      granularity: params.granularity
     }).toString();
     
     // 💡 This is the new API call using the product ID
