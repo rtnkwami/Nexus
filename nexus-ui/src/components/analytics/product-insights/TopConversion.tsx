@@ -7,7 +7,7 @@ function getConversionRateColor(rate: number) {
   return "text-green-600"; // Good
 }
 
-export default function TopConversionCard({ highestConversionProduct }) {
+export default function TopConversionCard({ highestConversionProduct, onCardClick }) {
   if (!highestConversionProduct) {
     return (
       <Card className="p-4">
@@ -21,9 +21,21 @@ export default function TopConversionCard({ highestConversionProduct }) {
   }
 
   const rate = parseFloat(highestConversionProduct.conversion_rate);
+  
+  const handleClick = () => {
+    if (onCardClick && highestConversionProduct.product_id && highestConversionProduct.product_name) {
+      onCardClick({
+        id: highestConversionProduct.product_id,
+        name: highestConversionProduct.product_name
+      });
+    }
+  };
 
   return (
-    <Card className="group cursor-pointer transition-all duration-200 hover:shadow-lg border-0 hover:bg-white dark:bg-gray-800 dark:hover:bg-gray-750 rounded-xl">
+    <Card 
+      className="group cursor-pointer transition-all duration-200 hover:shadow-lg border-0 hover:bg-white dark:bg-gray-800 dark:hover:bg-gray-750 rounded-xl"
+      onClick={handleClick}
+    >
       <CardContent className="p-8">
         <div className="flex items-start space-x-4">
           <div className="flex-1 min-w-0">

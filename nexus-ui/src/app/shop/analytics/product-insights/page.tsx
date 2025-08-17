@@ -235,6 +235,23 @@ useEffect(() => {
   }
 }, [selectedProduct, filterParams]);
 
+// 🔹 NEW: Handler for card clicks
+const handleCardClick = (product: { id: string; name: string }) => {
+  // Switch to analysis tab
+  setActiveTab("analysis");
+  
+  // Set the selected product
+  setSelectedProduct(product);
+  setSearchQuery(product.name);
+  
+  // Clear any existing suggestions
+  setSuggestions([]);
+  setActiveIndex(-1);
+  
+  // Clear any existing product analytics to show loading state
+  setProductAnalytics(null);
+};
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header with Date Filter, Search, and Tabs */}
@@ -353,10 +370,22 @@ useEffect(() => {
           {activeTab === "overview" && data && (
             <div className="space-y-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
-                <TopConversionCard highestConversionProduct={data.dashboard.highestConversionProduct} />
-                <MostViewedCard mostViewedProduct={data.dashboard.mostViewedProduct} />
-                <LeastViewedCard leastViewedProduct={data.dashboard.leastViewedProduct} />
-                <BiggestOpportunityCard biggestOpportunity={data.dashboard.biggestOpportunity} />
+                <TopConversionCard 
+                  highestConversionProduct={data.dashboard.highestConversionProduct} 
+                  onCardClick={handleCardClick}
+                />
+                <MostViewedCard 
+                  mostViewedProduct={data.dashboard.mostViewedProduct} 
+                  onCardClick={handleCardClick}
+                />
+                <LeastViewedCard 
+                  leastViewedProduct={data.dashboard.leastViewedProduct} 
+                  onCardClick={handleCardClick}
+                />
+                <BiggestOpportunityCard 
+                  biggestOpportunity={data.dashboard.biggestOpportunity} 
+                  onCardClick={handleCardClick}
+                />
               </div>
             </div>
           )}
@@ -415,6 +444,12 @@ useEffect(() => {
                       data={productAnalytics.dashboard.salesHistory.historicalOrders}
                     />
                   )}
+                </div>
+              ) : selectedProduct && !productAnalytics ? (
+                // Show loading state when product is selected but data is being fetched
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-6 h-6 animate-spin mr-3" />
+                  <span className="text-gray-600">Loading analytics for "{selectedProduct.name}"...</span>
                 </div>
               ) : (
                 // Show the initial "Search for a Product" message if no product is selected
