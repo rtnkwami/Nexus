@@ -3,10 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Package, DollarSign, ArrowLeft, ShoppingBag } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Package, DollarSign, ArrowLeft, ShoppingBag, Edit3 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation'; // Add this import
+import { useParams } from 'next/navigation';
 import { getAccessToken } from '@auth0/nextjs-auth0';
 
 interface OrderProduct {
@@ -18,7 +19,7 @@ interface OrderProduct {
 
 interface Order {
   id: string;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'completed' | 'cancelled';
   total: number;
   createdAt: string;
   updatedAt: string;
@@ -26,14 +27,20 @@ interface Order {
   UserId: string;
 }
 
-// Remove the props interface since we're getting orderId from params
-export default function OrderDetailsPage({ homeUrl, fetchUrl }) {
-  const { id } = useParams() // Extract id from params (folder name is [id])
+interface OrderDetailsPageProps {
+  homeUrl: string;
+  fetchUrl: string;
+  updateStatus?: boolean;
+}
+
+export default function OrderDetailsPage({ homeUrl, fetchUrl, updateStatus = false }: OrderDetailsPageProps) {
+  const { id } = useParams();
   
   const [order, setOrder] = useState<Order | null>(null);
   const [products, setProducts] = useState<OrderProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -55,7 +62,7 @@ export default function OrderDetailsPage({ homeUrl, fetchUrl }) {
       if (!response.ok) throw new Error('Failed to fetch order');
 
       const data = await response.json();
-      console.log(data)
+      console.log(data);
       setOrder(data.order);
       setProducts(data.products);
     } catch (err) {
@@ -65,12 +72,46 @@ export default function OrderDetailsPage({ homeUrl, fetchUrl }) {
     }
   };
 
+  const handleStatusUpdate = async (newStatus: string) => {
+    if (!order || !updateStatus) return;
+    
+    try {
+      setIsUpdatingStatus(true);
+      const token = await getAccessToken();
+      
+      const response = await fetch(`${fetchUrl}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update order status');
+      }
+
+      const updatedData = await response.json();
+      
+      // Update the local order state
+      setOrder(prev => prev ? { ...prev, status: newStatus as Order['status'] } : null);
+      
+      // You could show a success message here if needed
+      console.log('Order status updated successfully');
+      
+    } catch (err) {
+      console.error('Error updating status:', err);
+      setError(err instanceof Error ? err.message : 'Failed to update order status');
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     const colors = {
       pending: 'bg-yellow-100 text-yellow-800',
-      processing: 'bg-blue-100 text-blue-800',
-      shipped: 'bg-purple-100 text-purple-800',
-      delivered: 'bg-green-100 text-green-800',
+      completed: 'bg-green-100 text-green-800',
       cancelled: 'bg-red-100 text-red-800',
     };
     return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
@@ -86,7 +127,12 @@ export default function OrderDetailsPage({ homeUrl, fetchUrl }) {
     });
   };
 
-  // Add loading state for when orderId is not available yet
+  const statusOptions = [
+    { value: 'pending', label: 'Pending' },
+    { value: 'completed', label: 'Completed' },
+    { value: 'cancelled', label: 'Cancelled' },
+  ];
+
   if (!id) {
     return (
       <div className="container mx-auto py-8">
@@ -139,9 +185,32 @@ export default function OrderDetailsPage({ homeUrl, fetchUrl }) {
             <h1 className="text-3xl font-bold">Order #{order.id.slice(-8)}</h1>
             <p className="text-gray-600 mt-2">Placed on {formatDate(order.createdAt)}</p>
           </div>
-          <Badge className={getStatusColor(order.status)}>
-            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-          </Badge>
+          <div className="flex items-center gap-3">
+            <Badge className={getStatusColor(order.status)}>
+              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+            </Badge>
+            {updateStatus && (
+              <div className="flex items-center gap-2">
+                <Edit3 className="h-4 w-4 text-gray-500" />
+                <Select 
+                  value={order.status} 
+                  onValueChange={handleStatusUpdate}
+                  disabled={isUpdatingStatus}
+                >
+                  <SelectTrigger className="w-36">
+                    <SelectValue placeholder="Update status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statusOptions.map((status) => (
+                      <SelectItem key={status.value} value={status.value}>
+                        {status.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -217,7 +286,12 @@ export default function OrderDetailsPage({ homeUrl, fetchUrl }) {
                 </div>
                 <div>
                   <span className="font-medium">Status:</span>
-                  <p className="text-gray-600">{order.status}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-gray-600">{order.status}</p>
+                    {updateStatus && isUpdatingStatus && (
+                      <span className="text-xs text-blue-600">Updating...</span>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <span className="font-medium">Last Updated:</span>
