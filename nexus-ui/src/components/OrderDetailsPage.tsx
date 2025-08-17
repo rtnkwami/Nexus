@@ -27,7 +27,7 @@ interface Order {
 }
 
 // Remove the props interface since we're getting orderId from params
-export default function OrderDetailsPage() {
+export default function OrderDetailsPage({ homeUrl }) {
   const params = useParams(); // Get route parameters
   const orderId = params.id as string; // Extract id from params (folder name is [id])
   
@@ -115,7 +115,7 @@ export default function OrderDetailsPage() {
           <CardContent className="py-12 text-center">
             <p className="text-red-600 mb-4">{error || 'Order not found'}</p>
             <Button asChild>
-              <Link href="/dashboard/orders">Back to Orders</Link>
+              <Link href={`${homeUrl}`}>Back to Orders</Link>
             </Button>
           </CardContent>
         </Card>
@@ -130,7 +130,7 @@ export default function OrderDetailsPage() {
       {/* Header */}
       <div className="mb-8">
         <Button variant="ghost" asChild className="mb-4">
-          <Link href="/dashboard/orders">
+          <Link href={`${homeUrl}`}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Orders
           </Link>
