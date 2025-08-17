@@ -214,23 +214,41 @@ export const deleteShopProduct = async (req, res) => {
 }
 
 export const getShopOrders = async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 15;
+    const offset = (page - 1) * limit;
+
     try {
-        const { sub } = req.auth.payload;
+        const shopId = await getUserShopId(req);
+        const { status } = req.query;
+
+        const whereClause = { ShopId: shopId };
         
-        const user = await User.findOne({ where: { auth0_uid: sub } });
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
+        if (status) {
+            whereClause.status = status;
         }
 
-        const shop = await Shop.findOne({ where: { UserId: user.id } });
-        if (!shop) {
-            return res.status(404).json({ message: "Shop not found" });
+        const { count, rows } = await Order.findAndCountAll({ 
+            where: whereClause,
+            offset,
+            limit,
+            order: [['updatedAt', 'DESC']]
+        });
+
+        if (count === 0) { 
+            return res.status(404).json({ message: "No orders have been placed." }); 
         }
 
-        const orders = await Order.findAll({ where: { ShopId: shop.id } });
-
-        if (!orders) { return res.status(404).json({ message: "No orders have been placed." }) };
-        return res.status(200).json({ orders });
+        return res.status(200).json({
+            orders: rows,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(count / limit),
+                totalOrders: count,
+                hasNextPage: page < Math.ceil(count / limit),
+                hasPreviousPage: page > 1
+            }
+        });
 
     } catch (error) {
         console.error("Error getting orders: ", error);
