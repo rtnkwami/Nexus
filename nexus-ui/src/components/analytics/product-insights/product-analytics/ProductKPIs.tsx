@@ -29,7 +29,7 @@ function ProductKPIs({ revenue, unitsSold, orders, conversion }) {
       />
       
       <MetricCard
-        title="Total Orders"
+        title="Orders with Product"
         value={orders}
         formatValue={(val) => parseInt(val.toString()).toLocaleString()}
         iconBgColor="bg-purple-100 dark:bg-purple-900/30"

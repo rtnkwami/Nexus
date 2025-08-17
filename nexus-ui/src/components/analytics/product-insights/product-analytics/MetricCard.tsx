@@ -25,9 +25,9 @@ export default function MetricCard({
   const isClickable = !!onClick;
 
   return (
-    <Card className={`group transition-all duration-200 hover:shadow-lg border-0 hover:bg-white dark:bg-gray-800 dark:hover:bg-gray-750 rounded-xl ${isClickable ? 'cursor-pointer' : ''}`}
+    <Card className={`rounded-2xl`}
           onClick={onClick}>
-      <CardContent className="p-4">
+      <CardContent className="p-2">
         <div className="flex items-start space-x-4">
           <div className="flex-shrink-0">
           </div>
@@ -35,7 +35,7 @@ export default function MetricCard({
             <h3 className={`text-xl font-semibold text-gray-900 dark:text-white mb-2 transition-colors ${isClickable ? 'group-hover:text-blue-600' : ''}`}>
               {title}
             </h3>
-            <div className={`text-3xl font-bold ${valueColor} mb-1`}>
+            <div className={`text-2xl font-bold ${valueColor} mb-1`}>
               {displayValue}
             </div>
             {subtitle && (
