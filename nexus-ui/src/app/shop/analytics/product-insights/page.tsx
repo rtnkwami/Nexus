@@ -10,6 +10,8 @@ import MostViewedCard from "@/components/analytics/product-insights/MostViewed";
 import LeastViewedCard from "@/components/analytics/product-insights/LeastViewed";
 import BiggestOpportunityCard from "@/components/analytics/product-insights/BiggestOpportunity";
 import { ProductKPIs } from "@/components/analytics/product-insights/product-analytics/ProductKPIs";
+import HistoricalProductRevenueGraph from "@/components/analytics/product-insights/product-analytics/HistoricalProductRevenueGraph";
+import HistoricalProductOrdersGraph from "@/components/analytics/product-insights/product-analytics/HistoricalProductOrdersGraph";
 
 type TabType = "overview" | "analysis";
 
@@ -34,6 +36,8 @@ export default function ProductInsights() {
     to: Date;
     granularity: string;
   } | null>(null);
+
+  const [chartView, setChartView] = useState<"revenue" | "orders">("revenue");
 
   const wasSelectionMade = useRef(false);
 
@@ -361,18 +365,56 @@ useEffect(() => {
             <div className="space-y-6">
               {/* ✅ Render this block when you have a selected product AND the data for it */}
               {selectedProduct && productAnalytics ? (
-                <div>
+                <div className="space-y-8">
                   <h3 className="text-lg font-semibold mb-2 text-center">
                     Analytics for &quot;{selectedProduct.name}&quot;
                   </h3>
-                  {/* ✅ Pass the fetched data into your component's props */}
+                  
                   <ProductKPIs 
                     revenue={productAnalytics.dashboard.revenue}
                     unitsSold={productAnalytics.dashboard.unitsSold}
                     orders={productAnalytics.dashboard.orders}
                     conversion={productAnalytics.dashboard.conversion} 
                   />
-                  {/* You can add other components that consume 'data' here, like charts */}
+                  
+                  {/* Toggle buttons for charts */}
+                  <div className="flex justify-center">
+                    <div className="flex bg-gray-100 rounded-lg p-1">
+                      <button
+                        onClick={() => setChartView("revenue")}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                          chartView === "revenue"
+                            ? "bg-white text-gray-900 shadow-sm"
+                            : "text-gray-600 hover:text-gray-900"
+                        }`}
+                      >
+                        Revenue
+                      </button>
+                      <button
+                        onClick={() => setChartView("orders")}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                          chartView === "orders"
+                            ? "bg-white text-gray-900 shadow-sm"
+                            : "text-gray-600 hover:text-gray-900"
+                        }`}
+                      >
+                        Orders
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Conditional chart rendering */}
+                  {chartView === "revenue" && (
+                    <HistoricalProductRevenueGraph
+                      data={productAnalytics.dashboard.salesHistory.historicalRevenue}
+                    />
+                  )}
+
+                  {chartView === "orders" && (
+                    <HistoricalProductOrdersGraph
+                      data={productAnalytics.dashboard.salesHistory.historicalOrders}
+                    />
+                  )}
                 </div>
               ) : (
                 // Show the initial "Search for a Product" message if no product is selected
