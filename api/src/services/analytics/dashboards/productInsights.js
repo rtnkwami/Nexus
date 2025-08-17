@@ -1,6 +1,7 @@
 import { sequelize } from "../../../models/index.js";
 import { fn } from "sequelize";
 import { getLineGraphDateRange } from "../../../utils/getDateRange.js";
+import { fillMissingDates } from "./salesPerformance.js";
 
 export const getProductInsightsDashboard = async (shopId, fromDate, toDate) => {
     const highestConversionProduct = await getHighestConversionProducts(
@@ -32,17 +33,21 @@ export const getProductInsightsDashboard = async (shopId, fromDate, toDate) => {
     }
 };
 
-export const getOneProductAnalytics = async (shopId, fromDate, toDate, productId) => {
+export const getOneProductAnalytics = async (shopId, fromDate, toDate, productId, granularity) => {
     const revenue = await getProductRevenue(shopId, fromDate, toDate, productId);
     const unitSales = await getProductUnitSales(shopId, fromDate, toDate, productId);
     const orders = await getProductOrdersCount(shopId, fromDate, toDate, productId);
     const conversionRate = await getProductConversionRate(shopId, fromDate, toDate, productId);
+    const salesHistory = await getProductSalesOverTime(shopId, fromDate, toDate, productId, granularity);
+
+    console.log(salesHistory);
 
     return {
         revenue: revenue.total_revenue,
         unitsSold: unitSales.units_sold,
         orders: orders.orders,
-        conversion: conversionRate.conversion_rate
+        conversion: conversionRate.conversion_rate,
+        salesHistory
     }
 }
 
@@ -358,4 +363,101 @@ const getProductConversionRate = async (shopId, fromDate, toDate, productId) => 
         console.error(`Error fetching ${productId} order appearances`, error);
         return 0;
     }   
+}
+
+
+const getProductSalesOverTime = async (shopId, fromDate, toDate, productId, granularity) => {
+    try {
+        const { startDate, endDate } = getLineGraphDateRange(fromDate, toDate);
+        
+        let dateTrunc;
+        switch (granularity) {
+            case 'weekly':
+                dateTrunc = `date_trunc('week', "Orders"."createdAt")::date`;
+                break;
+            case 'monthly':
+                dateTrunc = `date_trunc('month', "Orders"."createdAt")::date`;
+                break;
+            default:
+                dateTrunc = `DATE("Orders"."createdAt")`;
+                break;
+        }
+
+        const historicalRevenueQuery = `
+            SELECT
+                ${dateTrunc} AS period,
+                SUM("OrderItems"."quantity" * "OrderItems"."priceAtTime") AS revenue
+            FROM "OrderItems"
+            JOIN "Orders" ON "OrderItems"."OrderId" = "Orders"."id"
+            JOIN "Products" ON "OrderItems"."ProductId" = "Products"."id"
+            WHERE "Orders"."ShopId" = :shopId
+                AND "Orders"."createdAt" BETWEEN :startDate AND :endDate
+                AND "Orders".status = 'completed'
+                AND "Products"."id" = :productId
+            GROUP BY ${dateTrunc}
+            ORDER BY period;
+        `;
+
+        const historicalOrdersQuery = `
+            SELECT
+                ${dateTrunc} AS period,
+                COUNT("OrderItems"."quantity") AS units_sold
+            FROM "OrderItems"
+            JOIN "Orders" ON "OrderItems"."OrderId" = "Orders"."id"
+            JOIN "Products" ON "OrderItems"."ProductId" = "Products"."id"
+            WHERE "Orders"."ShopId" = :shopId
+                AND "Orders"."createdAt" BETWEEN :startDate AND :endDate
+                AND "Orders".status = 'completed'
+                AND "Products"."id" = :productId
+            GROUP BY ${dateTrunc}
+            ORDER BY period;
+        `;
+
+        const [rawHistoricalRevenue, rawHistoricalOrders] = await Promise.all([
+            sequelize.query(historicalRevenueQuery, {
+                type: sequelize.QueryTypes.SELECT,
+                replacements: {
+                    shopId,
+                    startDate,
+                    endDate,
+                    productId
+                }
+            }),
+
+            sequelize.query(historicalOrdersQuery, {
+                type: sequelize.QueryTypes.SELECT,
+                replacements: {
+                    shopId,
+                    startDate,
+                    endDate,
+                    productId
+                }
+            })
+        ]);
+
+        const historicalRevenue = fillMissingDates(
+            rawHistoricalRevenue,
+            startDate,
+            endDate,
+            'revenue',
+            granularity
+        );
+
+        const historicalOrders = fillMissingDates(
+            rawHistoricalOrders,
+            startDate,
+            endDate,
+            'units_sold',
+            granularity
+        );
+
+        return {
+            historicalRevenue,
+            historicalOrders
+        }
+
+    } catch (error) {
+        console.error('Error fetching product sales over time:', error);
+        return [];
+    }
 }

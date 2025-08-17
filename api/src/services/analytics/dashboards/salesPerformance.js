@@ -12,7 +12,7 @@ export const getSalesPerformanceDashboard = async (shopId, fromDate, toDate, gra
     }
 };
 
-function fillMissingDates(rawData, startDate, endDate, valueField, granularity) {
+export function fillMissingDates(rawData, startDate, endDate, valueField, granularity) {
     // Create a Map of your existing data for efficient lookups.
     const dataMap = new Map(
         rawData.map(row => [row.period, parseFloat(row[valueField])])
