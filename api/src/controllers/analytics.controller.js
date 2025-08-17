@@ -67,6 +67,7 @@ export const productAnalytics = async (req, res) => {
         const { productId } = req.params;
         const fromDate = decodeURIComponent(req.query.fromDate);
         const toDate = decodeURIComponent(req.query.toDate);
+        const { granularity } = req.query.toDate;
 
         const dashboardData = await Analytics.getOneProductAnalytics(
             shopId,
