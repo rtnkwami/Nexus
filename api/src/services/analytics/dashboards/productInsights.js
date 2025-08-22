@@ -1,6 +1,7 @@
 import { sequelize } from "../../../models/index.js";
 import { fn } from "sequelize";
 import { getLineGraphDateRange } from "../../../utils/getDateRange.js";
+
 import { fillMissingDates } from "./salesPerformance.js";
 
 export const getProductInsightsDashboard = async (shopId, fromDate, toDate) => {
@@ -39,8 +40,6 @@ export const getOneProductAnalytics = async (shopId, fromDate, toDate, productId
     const orders = await getProductOrdersCount(shopId, fromDate, toDate, productId);
     const conversionRate = await getProductConversionRate(shopId, fromDate, toDate, productId);
     const salesHistory = await getProductSalesOverTime(shopId, fromDate, toDate, productId, granularity);
-
-    console.log(salesHistory);
 
     return {
         revenue: revenue.total_revenue,
@@ -219,8 +218,6 @@ const getProductRevenue = async (shopId, fromDate, toDate, productId) => {
                     productId
                 }
         });
-
-        console.log(revenue);
         return revenue[0];
         
     } catch (error) {

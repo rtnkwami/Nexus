@@ -5,8 +5,21 @@ export const overviewDashboard = async (req, res) => {
     try {
         const shopId = await getUserShopId(req);
         const period = req.query.period;
+        const isInsights = req.query.insights;
 
         const dashboardData = await Analytics.getOverviewDashboard(shopId, period);
+
+        if (isInsights) { 
+            const insights = await Analytics.getDashboardInsights(dashboardData);
+            
+            console.log(insights)
+
+            return res.status(200).json({
+                insights
+            });
+        }
+
+        console.log("hello world")
 
         return res.status(200).json({
             dashboard: dashboardData
@@ -67,15 +80,15 @@ export const productAnalytics = async (req, res) => {
         const { productId } = req.params;
         const fromDate = decodeURIComponent(req.query.fromDate);
         const toDate = decodeURIComponent(req.query.toDate);
-        const { granularity } = req.query.toDate;
+        const granularity = req.query.granularity;
 
         const dashboardData = await Analytics.getOneProductAnalytics(
             shopId,
             fromDate,
             toDate,
-            productId
+            productId,
+            granularity
         );
-        console.log("Dashboard Data: ", dashboardData);
 
         return res.status(200).json({
             dashboard: dashboardData

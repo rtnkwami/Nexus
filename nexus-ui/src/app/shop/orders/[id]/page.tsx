@@ -9,5 +9,6 @@ export default function OrderDetailsRoute() {
  return <OrderDetailsPage 
             homeUrl={"/shop/orders"}
             fetchUrl={`http://localhost:5000/shops/orders/${id}`}
+            updateStatus={true}
         />;
 }
