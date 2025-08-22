@@ -4,14 +4,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Package, Calendar, DollarSign, Eye, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Package, Calendar, Eye, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { getAccessToken } from '@auth0/nextjs-auth0';
 
 interface Order {
   id: string;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'completed' | 'cancelled';
   total: number;
   createdAt: string;
   updatedAt: string;
@@ -119,11 +119,7 @@ export default function ShopOrders() {
     switch (status) {
       case 'pending':
         return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'processing':
-        return 'bg-blue-100 text-blue-800 border-blue-300';
-      case 'shipped':
-        return 'bg-purple-100 text-purple-800 border-purple-300';
-      case 'delivered':
+      case 'completed':
         return 'bg-green-100 text-green-800 border-green-300';
       case 'cancelled':
         return 'bg-red-100 text-red-800 border-red-300';
@@ -328,7 +324,6 @@ export default function ShopOrders() {
                     </div>
                     
                     <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-gray-500" />
                       <div>
                         <p className="text-sm font-medium">Total Amount</p>
                         <p className="text-sm text-gray-600 font-semibold">&#8373;{order.total.toFixed(2)}</p>
