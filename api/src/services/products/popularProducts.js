@@ -51,3 +51,37 @@ export const getPopularProductsByCategory = async (category) => {
 
     return popularProducts;
 };
+
+export const getMostPopularProducts = async () => {
+    const query = `
+        WITH weekly_sales AS (
+            SELECT 
+                oi."ProductId",
+                SUM(oi.quantity) as total_units_sold
+            FROM "OrderItems" oi
+            JOIN "Orders" o ON oi."OrderId" = o.id
+            WHERE o."createdAt" >= NOW() - INTERVAL '7 days'
+                AND o.status = 'completed'
+            GROUP BY oi."ProductId"
+            )
+            SELECT 
+                p.id,
+                p.name,
+                p.description,
+                p.category,
+                p.price,
+                p.images,
+                ws.total_units_sold,
+            ROW_NUMBER() OVER (ORDER BY ws.total_units_sold DESC) as rank
+            FROM "Products" p
+            JOIN weekly_sales ws ON p.id = ws."ProductId"
+            ORDER BY ws.total_units_sold DESC
+            LIMIT 6;
+    `;
+
+    const mostPopularProducts = await sequelize.query(query, {
+        type: sequelize.QueryTypes.SELECT
+    });
+
+    return mostPopularProducts;
+};
