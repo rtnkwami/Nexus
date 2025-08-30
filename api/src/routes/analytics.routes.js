@@ -4,8 +4,7 @@ import {
     overviewDashboard,
     salesPerformanceDashboard,
     productInsightsDashboard,
-    productAnalytics,
-    getOverviewInsights
+    productAnalytics
 } from '../controllers/analytics.controller.js';
 
 

@@ -19,8 +19,6 @@ export const overviewDashboard = async (req, res) => {
             });
         }
 
-        console.log("hello world")
-
         return res.status(200).json({
             dashboard: dashboardData
         });
@@ -81,6 +79,7 @@ export const productAnalytics = async (req, res) => {
         const fromDate = decodeURIComponent(req.query.fromDate);
         const toDate = decodeURIComponent(req.query.toDate);
         const granularity = req.query.granularity;
+        const isInsights = req.query.insights;
 
         const dashboardData = await Analytics.getOneProductAnalytics(
             shopId,
@@ -89,6 +88,14 @@ export const productAnalytics = async (req, res) => {
             productId,
             granularity
         );
+
+        if (isInsights) { 
+            const insights = await Analytics.getProductAnalyticsInsights(dashboardData);
+
+            return res.status(200).json({
+                insights
+            });
+        }
 
         return res.status(200).json({
             dashboard: dashboardData
