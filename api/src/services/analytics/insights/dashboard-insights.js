@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 
 const ai = new GoogleGenAI({});
 
-export default async function getDashboardInsights(data) {
+export async function getDashboardInsights(data) {
 
     const responseSchema = {
             type: "object",
@@ -98,4 +98,104 @@ export default async function getDashboardInsights(data) {
 
   console.log("Insights:", response.text);
   return JSON.parse(response.text);
+}
+
+export async function getProductAnalyticsInsights(productData) {
+    const responseSchema = {
+        type: "object",
+        properties: {
+            productInsights: {
+                type: "object",
+                properties: {
+                    primaryInsight: {
+                        type: "object",
+                        properties: {
+                            title: { type: "string" },
+                            message: { type: "string" },
+                            status: { type: "string", enum: ["positive", "negative", "neutral"] },
+                            actionable: { type: "string" }
+                        },
+                        required: ["title", "message", "status", "actionable"]
+                    },
+                    performanceBreakdown: {
+                        type: "array",
+                        items: {
+                            type: "object",
+                            properties: {
+                                metric: { type: "string" },
+                                explanation: { type: "string" },
+                                interpretation: { type: "string" },
+                                value: { type: "string" }
+                            },
+                            required: ["metric", "explanation", "interpretation", "value"]
+                        }
+                    },
+                    actionableRecommendations: {
+                        type: "array",
+                        items: {
+                            type: "object",
+                            properties: {
+                                priority: { type: "string", enum: ["high", "medium", "low"] },
+                                action: { type: "string" },
+                                reasoning: { type: "string" },
+                                expectedImpact: { type: "string" }
+                            },
+                            required: ["priority", "action", "reasoning", "expectedImpact"]
+                        }
+                    },
+                    opportunityAnalysis: {
+                        type: "object",
+                        properties: {
+                            strengths: { type: "array", items: { type: "string" } },
+                            improvements: { type: "array", items: { type: "string" } },
+                            potentialRevenue: { type: ["string", "null"] }
+                        },
+                        required: ["strengths", "improvements"]
+                    },
+                    systemNote: {
+                        type: ["object", "null"],
+                        properties: {
+                            type: { type: "string", enum: ["warning", "info", "data_quality"] },
+                            message: { type: "string" }
+                        },
+                        required: ["type", "message"]
+                    }
+                },
+                required: ["primaryInsight", "performanceBreakdown", "actionableRecommendations", "opportunityAnalysis", "systemNote"]
+            }
+        },
+        required: ["productInsights"]
+    };
+
+    const prompt = `
+    You are a data-driven product performance analyst. Your job is to accurately analyze sales data and provide insights based on what the data actually shows, not assumptions.
+
+    **ANALYSIS APPROACH:**
+    1. Calculate key metrics from the provided data
+    2. Identify what the data actually shows about customer behavior
+    3. Recommend strategies based solely on the observed patterns
+
+    **KEY METRICS TO CALCULATE:**
+    - Total revenue, units sold, orders
+    - Average order value (revenue ÷ orders)  
+    - Average units per order (units ÷ orders)
+    - Monthly trends and patterns
+
+    **CRITICAL:** Base all insights strictly on the data provided. Let the numbers guide your conclusions, not preconceived notions about customer behavior patterns.
+
+    Format monetary values with ₵ symbol.
+
+    **Data to analyze:**
+    ${JSON.stringify(productData, null, 2)}
+    `;
+
+    const response = await ai.models.generateContent({
+        model: "gemini-2.5-pro",  
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        config: {
+            responseMimeType: "application/json",
+            responseSchema
+        }
+    });
+    return JSON.parse(response.text);
 }
