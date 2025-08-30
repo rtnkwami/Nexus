@@ -4,6 +4,63 @@ import { getLineGraphDateRange } from "../../../utils/getDateRange.js";
 
 import { fillMissingDates } from "./salesPerformance.js";
 
+export function fillMissingOrders(rawData, startDate, endDate, valueFields, granularity) {
+    // Create a Map where the key is the period and the value is the whole data object.
+    const dataMap = new Map(
+        rawData.map(row => {
+            const values = {};
+            // Make sure all values are parsed as floats
+            valueFields.forEach(field => {
+                values[field] = parseFloat(row[field] || 0);
+            });
+            return [row.period, values];
+        })
+    );
+
+    const filledData = [];
+    let current = new Date(startDate);
+    const end = new Date(endDate);
+
+    // ## ALIGNMENT FIX ## (This logic remains the same)
+    if (granularity === 'weekly') {
+        const dayOfWeek = current.getDay();
+        const offset = (dayOfWeek === 0) ? 6 : dayOfWeek - 1; 
+        current.setDate(current.getDate() - offset);
+    } else if (granularity === 'monthly') {
+        current.setDate(1);
+    }
+
+    while (current <= end) {
+        const period = current.toISOString().split('T')[0];
+
+        if (new Date(period) >= new Date(startDate)) {
+            const existingData = dataMap.get(period);
+            const dataPoint = { period };
+
+            // For each field, use existing data or default to 0.
+            valueFields.forEach(field => {
+                dataPoint[field] = existingData ? existingData[field] : 0;
+            });
+            
+            filledData.push(dataPoint);
+        }
+
+        // Increment to the next period (This logic remains the same)
+        switch (granularity) {
+            case 'weekly':
+                current.setDate(current.getDate() + 7);
+                break;
+            case 'monthly':
+                current.setMonth(current.getMonth() + 1);
+                break;
+            default: // 'daily'
+                current.setDate(current.getDate() + 1);
+                break;
+        }
+    }
+    return filledData;
+}
+
 export const getProductInsightsDashboard = async (shopId, fromDate, toDate) => {
     const highestConversionProduct = await getHighestConversionProducts(
         shopId,
@@ -398,7 +455,8 @@ const getProductSalesOverTime = async (shopId, fromDate, toDate, productId, gran
         const historicalOrdersQuery = `
             SELECT
                 ${dateTrunc} AS period,
-                COUNT("OrderItems"."quantity") AS units_sold
+                SUM("OrderItems"."quantity") AS units_sold,
+                COUNT(DISTINCT "Orders"."id") AS orders
             FROM "OrderItems"
             JOIN "Orders" ON "OrderItems"."OrderId" = "Orders"."id"
             JOIN "Products" ON "OrderItems"."ProductId" = "Products"."id"
@@ -440,11 +498,11 @@ const getProductSalesOverTime = async (shopId, fromDate, toDate, productId, gran
             granularity
         );
 
-        const historicalOrders = fillMissingDates(
+        const historicalOrders = fillMissingOrders(
             rawHistoricalOrders,
             startDate,
             endDate,
-            'units_sold',
+            ['units_sold', 'orders'],
             granularity
         );
 
