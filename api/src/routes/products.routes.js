@@ -4,12 +4,14 @@ import {
     getOneProduct,
     getProductCategories,
     searchSuggestions,
-    getPopularProducts
+    getPopularProducts,
+    getOverallPopularProducts
 } from '../controllers/product.controller.js';
 
 const router = express.Router();
 
 router.get('/', getAllProducts);
+router.get('/popular', getOverallPopularProducts);
 router.get('/search-suggestions', searchSuggestions)
 router.get('/categories', getProductCategories);
 router.get('/categories/:category/popular', getPopularProducts);
