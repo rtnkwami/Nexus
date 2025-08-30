@@ -28,7 +28,7 @@ export default function ProductCard({ product }: { product: Product }) {
         <CardDescription className="text-sm text-muted-foreground mb-1">
           {product.description ?? "No description available."}
         </CardDescription>
-        <p className="text-lg font-medium">&#8373;{product.price.toFixed(2)}</p>
+        <p className="text-lg font-medium">&#8373;{product.price}</p>
       </Card>
     </Link>
   );
