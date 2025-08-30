@@ -37,9 +37,9 @@ export default function Navbar() {
   useUserSetup()
 
   return (
-    <nav className="sticky top-0 z-50 flex h-16 items-center justify-between border-b bg-white px-6">
+    <nav className="sticky top-0 z-50 flex h-20 items-center justify-between border-b bg-white px-8">
       {/* App logo and home link */}
-      <Link href="/" className="text-xl font-semibold flex-shrink-0">
+      <Link href="/" className="text-2xl font-semibold flex-shrink-0">
         Nexus
       </Link>
 

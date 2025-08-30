@@ -114,19 +114,20 @@ export default function NavbarProductSearch({
   return (
     <div className="relative">
       <form onSubmit={handleSearch} className={`relative ${className}`}>
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
         <Input
           type="text"
           placeholder={placeholder}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="pl-10 pr-20 w-full"
+          className="pl-12 pr-24 w-full h-12 !text-base !leading-relaxed rounded-md"
         />
+
         <Button
           type="submit"
-          size="sm"
-          className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7"
+          size="lg"
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 px-4 text-sm font-medium"
           disabled={!searchTerm.trim()}
         >
           Search
