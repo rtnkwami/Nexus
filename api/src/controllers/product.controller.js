@@ -1,5 +1,6 @@
 import { Product } from "../models/index.js";
 import { fn, col, Op } from "sequelize";
+import { getPopularProductsByCategory } from "../services/products/popularProducts.js";
 
 export const getAllProducts = async (req, res) => {    
     const page = parseInt(req.query.page) || 1;
@@ -108,5 +109,17 @@ export const searchSuggestions = async (req, res) => {
     } catch (error) {
         console.log('Error getting search suggestions', error)
         return res.status(500);
+    }
+}
+
+export const getPopularProducts = async (req, res) => {
+    try {
+        const category = req.params.category;
+
+        const popularProducts = await getPopularProductsByCategory(category);
+        res.status(200).json({ popularProducts });
+    } catch (error) {
+        console.error("Error getting popular products: ", error);
+        res.status(500).json({ message: "Internal server error" });
     }
 }
