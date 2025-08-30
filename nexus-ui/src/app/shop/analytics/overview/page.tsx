@@ -126,44 +126,6 @@ export default function AnalyticsOverviewPage() {
     setIsInsightsOpen(false);
   };
 
-  // Mock insights data for demonstration (matching new structure)
-  const mockInsights = {
-    businessInsights: {
-      primaryInsight: {
-        title: "Revenue Growth",
-        message: "Your business shows positive growth trends with opportunities for optimization.",
-        status: "positive",
-        metricValue: "+15.3%"
-      },
-      keyMetrics: [
-        {
-          name: "Total Revenue",
-          value: "+$2,340",
-          change: "+23%",
-          status: "positive"
-        },
-        {
-          name: "Order Volume", 
-          value: "+45 orders",
-          change: "+15%",
-          status: "positive"
-        },
-        {
-          name: "Average Order Value",
-          value: "$65.50",
-          change: "+8%",
-          status: "positive"
-        }
-      ],
-      recommendations: [
-        { text: "Consider promoting your best-selling products during peak hours" },
-        { text: "Review your checkout process to improve conversion rates" }, 
-        { text: "Focus on customer retention strategies for higher lifetime value" }
-      ],
-      systemNote: null
-    }
-  };
-
   const getInsightIcon = (metricName: string) => {
     const name = metricName.toLowerCase();
     if (name.includes('revenue')) return <DollarSign className="w-5 h-5" />;
