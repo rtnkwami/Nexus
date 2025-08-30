@@ -1,4 +1,4 @@
-import { Product, ProductView } from "../models/index.js";
+import { Product } from "../models/index.js";
 import { fn, col, Op } from "sequelize";
 
 export const getAllProducts = async (req, res) => {    
@@ -88,3 +88,25 @@ export const getProductCategories = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const searchSuggestions = async (req, res) => {
+    try {
+        const q = req.query.q?.toString().toLowerCase() || "";
+        if (!q) return res.json([]);
+        console.log(q);
+        const matches = await Product.findAll({
+                where: {
+                    name: { [Op.iLike]: `%${q}%` },
+                },
+                attributes: ["id", "name"],
+                limit: 5,
+                raw: true
+            });
+
+        res.json(matches);
+        
+    } catch (error) {
+        console.log('Error getting search suggestions', error)
+        return res.status(500);
+    }
+}
