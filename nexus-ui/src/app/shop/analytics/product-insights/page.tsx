@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import SalesPerformanceFilter from "@/components/analytics/salesPerformance/SalesPerformanceFilter";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Search } from "lucide-react";
+import { Loader2, Search, Eye } from "lucide-react";
 import { getAccessToken } from "@auth0/nextjs-auth0";
 import TopConversionCard from "@/components/analytics/product-insights/TopConversion";
 import MostViewedCard from "@/components/analytics/product-insights/MostViewed";
@@ -12,6 +12,7 @@ import BiggestOpportunityCard from "@/components/analytics/product-insights/Bigg
 import { ProductKPIs } from "@/components/analytics/product-insights/product-analytics/ProductKPIs";
 import HistoricalProductRevenueGraph from "@/components/analytics/product-insights/product-analytics/HistoricalProductRevenueGraph";
 import HistoricalProductOrdersGraph from "@/components/analytics/product-insights/product-analytics/HistoricalProductOrdersGraph";
+import InsightsSlider from "@/components/analytics/product-insights/product-analytics/InsightsSlider";
 
 type TabType = "overview" | "analysis";
 
@@ -24,6 +25,11 @@ export default function ProductInsights() {
   const [searchQuery, setSearchQuery] = useState("");
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<{ id: string; name: string } | null>(null);
+
+  const [showInsights, setShowInsights] = useState(false);
+  const [productInsights, setProductInsights] = useState(null);
+  const [insightsLoading, setInsightsLoading] = useState(false);
+  const [insightsError, setInsightsError] = useState(null);
 
   // 🔹 NEW: suggestion state + debounce ref
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -255,6 +261,68 @@ const handleCardClick = (product: { id: string; name: string }) => {
   setProductAnalytics(null);
 };
 
+  const fetchProductInsights = async (productId: string, params: { from: Date; to: Date, granularity: string }) => {
+    setInsightsLoading(true);
+    setInsightsError(null);
+    
+    try {    
+      const query = new URLSearchParams({
+        fromDate: params.from.toISOString(),
+        toDate: params.to.toISOString(),
+        granularity: params.granularity,
+        insights: "true"
+      }).toString();
+
+      const res = await fetch(
+        `http://localhost:5000/analytics/product-insights/${productId}?${query}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      const result = await res.json();
+      setProductInsights(result.insights.productInsights || result);
+    } catch (err) {
+        console.error("Failed to fetch product insights:", err);
+        setInsightsError(err.message || "Failed to generate insights. Please try again.");
+    } finally {
+        setInsightsLoading(false);
+    }
+  };
+
+  const handleViewInsights = async () => {
+  if (!selectedProduct || !filterParams) return;
+  
+  setShowInsights(true);
+  
+  // Only fetch if we don't already have insights for this product
+  if (!productInsights) {
+    await fetchProductInsights(selectedProduct.id, filterParams);
+  }
+};
+
+// Add this function to handle retry
+  const handleRetryInsights = async () => {
+    if (selectedProduct && filterParams) {
+      setProductInsights(null); // Clear existing data
+      await fetchProductInsights(selectedProduct.id, filterParams);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedProduct) {
+      setProductInsights(null); // Clear previous product's insights
+      setInsightsError(null);
+    }
+  }, [selectedProduct]);
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header with Date Filter, Search, and Tabs */}
@@ -398,9 +466,21 @@ const handleCardClick = (product: { id: string; name: string }) => {
               {/* ✅ Render this block when you have a selected product AND the data for it */}
               {selectedProduct && productAnalytics ? (
                 <div className="space-y-8">
-                  <h3 className="text-lg font-semibold mb-2 text-center">
-                    Analytics for &quot;{selectedProduct.name}&quot;
-                  </h3>
+                  {/* Product Title and Insights Button */}
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <h3 className="text-lg font-semibold text-center sm:text-left">
+                      Analytics for &quot;{selectedProduct.name}&quot;
+                    </h3>
+                    
+                    {/* View Insights Button */}
+                    <button
+                      onClick={handleViewInsights}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center text-sm font-medium"
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      View AI Insights
+                    </button>
+                  </div>
                   
                   <ProductKPIs 
                     revenue={productAnalytics.dashboard.revenue}
@@ -466,6 +546,16 @@ const handleCardClick = (product: { id: string; name: string }) => {
                   </p>
                 </div>
               )}
+
+              {/* InsightsSlider Component - Add this at the end, outside the conditional blocks */}
+              <InsightsSlider 
+                isOpen={showInsights}
+                onClose={() => setShowInsights(false)}
+                insights={productInsights}
+                loading={insightsLoading}
+                error={insightsError}
+                onRetry={handleRetryInsights}
+              />
             </div>
           )}
         </>
