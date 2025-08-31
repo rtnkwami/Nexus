@@ -228,6 +228,12 @@ export const getShopOrders = async (req, res) => {
 
         const { count, rows } = await Order.findAndCountAll({ 
             where: whereClause,
+            include: [
+                {
+                    model: User,
+                    attributes: ['name']
+                }
+            ],
             offset,
             limit,
             order: [['updatedAt', 'DESC']]
@@ -262,7 +268,7 @@ export const getOneShopOrder = async (req, res) => {
         if (!order){ return res.status(404).json({ message: "Order doesn't exist" }) }
 
         const orderProducts = await order.getProducts({
-            attributes: ['id', 'name', 'category'],
+            attributes: ['id', 'name', 'category', 'images'],
             through: {
                 attributes: ['quantity', 'priceAtTime']
             }
@@ -274,7 +280,8 @@ export const getOneShopOrder = async (req, res) => {
                 name: product.name,
                 category: product.category,
                 quantity: product.OrderItem.quantity,
-                priceAtTime: product.OrderItem.priceAtTime
+                priceAtTime: product.OrderItem.priceAtTime,
+                images: product.images
             };
         });
 
