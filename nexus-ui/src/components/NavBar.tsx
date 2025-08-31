@@ -10,6 +10,7 @@ import {
   AvatarFallback,
 } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -38,19 +39,21 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 flex h-20 items-center justify-between border-b bg-white px-8">
-      {/* App logo and home link */}
-      <Link href="/" className="text-2xl font-semibold flex-shrink-0">
+      <Link href="/" className="flex items-center text-2xl font-semibold flex-shrink-0">
+        <Image
+        src={"https://static.vecteezy.com/system/resources/previews/049/590/071/non_2x/networking-nexus-icon-line-illustration-vector.jpg"}
+        alt="Nexus Logo"
+        width={40}
+        height={40}
+        />
         Nexus
       </Link>
 
-      {/* Product search in the center */}
       <div className="flex-1 max-w-md mx-8">
         <NavbarProductSearch placeholder="Search products..." />
       </div>
 
-      {/* Right side: Cart and User menu */}
       <div className="flex items-center space-x-4 flex-shrink-0">
-        {/* Cart drawer button */}
         <CartDrawer />
 
         {/* Show user menu if authenticated, otherwise show sign-in button */}

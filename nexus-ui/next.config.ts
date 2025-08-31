@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
         hostname: 'picsum.photos',
         port: '',
         pathname: '/**',
+      },{
+        protocol: "https",
+        hostname: "static.vecteezy.com", // ✅ allow your logo domain
+        port: "",
+        pathname: "/**",
       },
     ],
   },
