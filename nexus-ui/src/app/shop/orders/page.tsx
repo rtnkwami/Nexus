@@ -17,6 +17,9 @@ interface Order {
   updatedAt: string;
   ShopId: string;
   UserId: string;
+  User: {
+    name: string;
+  }
 }
 
 interface Pagination {
@@ -343,7 +346,7 @@ export default function ShopOrders() {
                   
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-gray-600">
-                      <p>Shop ID: {order.ShopId}</p>
+                      <p>Customer: {order.User.name}</p>
                     </div>
                     <Button variant="outline" size="sm" asChild>
                       <Link href={`/shop/orders/${order.id}`}>

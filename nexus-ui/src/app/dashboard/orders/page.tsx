@@ -341,7 +341,7 @@ export default function DashboardOrders() {
 
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-gray-600">
-                      <p>Shop: {order.Shop.name}</p>
+                      <p>{order.Shop.name}</p>
                     </div>
                     <Button variant="outline" size="sm" asChild>
                       <Link href={`/dashboard/orders/${order.id}`}>
