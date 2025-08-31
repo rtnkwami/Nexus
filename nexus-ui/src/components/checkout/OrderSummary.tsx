@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { getAccessToken } from '@auth0/nextjs-auth0';
+import { useCart } from '@/contexts/CartContext';
 
 interface CartItem {
   id: string;
@@ -28,6 +29,7 @@ interface OrderSummaryProps {
 export default function OrderSummary({ cart, cartTotal, isLoading, onConfirmOrder }: OrderSummaryProps) {
   const router = useRouter();
   const [isConfirming, setIsConfirming] = useState(false);
+  const { clearCart, refreshCart } = useCart();
 
   const handleConfirmOrder = async () => {
     setIsConfirming(true);
@@ -53,17 +55,17 @@ export default function OrderSummary({ cart, cartTotal, isLoading, onConfirmOrde
       const data = await response.json();
       
       if (data.success) {
-        // Call the parent's onConfirmOrder callback if needed
+        clearCart();
+        await refreshCart();
+
         onConfirmOrder();
         
-        // Redirect to dashboard
         router.push('/dashboard');
       } else {
         throw new Error(data.message || 'Failed to place order');
       }
     } catch (error) {
       console.error('Error placing order:', error);
-      // You might want to show a toast notification or error message here
       alert(error instanceof Error ? error.message : 'Failed to place order. Please try again.');
     } finally {
       setIsConfirming(false);

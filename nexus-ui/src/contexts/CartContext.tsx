@@ -17,6 +17,7 @@ interface CartContextType {
   updateCartItem: (productId: string, quantity: number) => Promise<void>;
   removeFromCart: (productId: string) => Promise<void>;
   refreshCart: () => Promise<void>;
+  clearCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -31,7 +32,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       const response = await fetch('http://localhost:5000/carts', {
-        credentials: 'include', // Include session cookies
+        credentials: 'include',
+        cache: 'no-store',                      // 👈 prevent caching
+        headers: { 'Cache-Control': 'no-cache' }
       });
       
       if (response.ok) {
@@ -45,6 +48,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(false);
     }
   };
+
+  const clearCart = () => {
+  setCart([]);
+  setCartTotal(0);
+};
 
   // Add item to cart
   const addToCart = async (productId: string, quantity: number) => {
@@ -131,6 +139,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         updateCartItem,
         removeFromCart,
         refreshCart,
+        clearCart,
       }}
     >
       {children}
