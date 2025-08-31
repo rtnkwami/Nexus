@@ -41,15 +41,54 @@ export const getUserMetadata = async (req, res) => {
 }
 
 export const getUserOrders = async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 15;
+    const offset = (page - 1) * limit;
+
+    const whereClause = {};
+
     try {
         const { sub } = req.auth.payload;
-        const user = await User.findOne({ where: { auth0_uid: sub } });
+        const user = await User.findOne({where: { auth0_uid: sub } });
         if (!user) { return res.status(404).json({ message: "User not found" }) };
+        
+        const { status } = req.query;
+        
+        if (status) {
+            whereClause.status = status;
+        }
 
-        const orders = await user.getOrders();
+        const count = await user.countOrders({ where: whereClause });
+        if (count === 0) {
+            return res.status(404).json({
+                message: "No orders have been placed."
+            })
+        };
+        
+        const orders = await user.getOrders({
+            where: whereClause,
+            limit,
+            offset,
+            order: [["createdAt", "DESC"]],
+        });
 
-        if (!orders) { return res.status(404).json({ message: "No orders have been placed." }) };
-        return res.status(200).json({ orders });
+        if (!orders) {
+            return res.status(404).json({
+                message: "No orders have been placed."
+            })
+        };
+        
+        const totalPages = Math.ceil(count / limit);
+        return res.status(200).json({
+        orders,
+        pagination: {
+            currentPage: page,
+            totalPages,
+            totalOrders: count,
+            hasNextPage: page < totalPages,
+            hasPreviousPage: page > 1,
+        },
+        });
 
     } catch (error) {
         console.error("Error getting orders: ", error);

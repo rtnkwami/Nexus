@@ -87,8 +87,6 @@ export const searchSuggestions = async (req, res) => {
                 raw: true
             });
 
-            console.log(matches);
-
         res.json(matches);
         
     } catch (error) {
