@@ -8,6 +8,7 @@ import { Package, DollarSign, ArrowLeft, ShoppingBag, Edit3 } from 'lucide-react
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Image from 'next/image';
 import { getAccessToken } from '@auth0/nextjs-auth0';
 
 interface OrderProduct {
@@ -228,17 +229,38 @@ export default function OrderDetailsPage({ homeUrl, fetchUrl, updateStatus = fal
               <div className="space-y-4">
                 {products.map((product, index) => (
                   <div key={product.id}>
-                    <div className="flex justify-between">
-                      <div>
-                        <h3 className="font-medium">{product.name}</h3>
-                        <p className="text-sm text-gray-600">
-                          Qty: {product.quantity} × &#8373;{product.priceAtTime.toFixed(2)}
-                        </p>
+                    <div className="flex justify-between items-center">
+                      {/* Left side: image + info */}
+                      <div className="flex items-center gap-3">
+                        {product.images?.length > 0 ? (
+                          <div className="relative w-16 h-16">
+                            <Image
+                              src={product.images[0]}
+                              alt={product.name}
+                              fill
+                              className="object-cover rounded-md border"
+                              sizes="64px" // tells Next.js the expected display size
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-16 h-16 bg-gray-100 flex items-center justify-center rounded-md text-gray-400 text-xs">
+                            No Image
+                          </div>
+                        )}
+                        <div>
+                          <h3 className="font-medium">{product.name}</h3>
+                          <p className="text-sm text-gray-600">
+                            Qty: {product.quantity} × &#8373;{product.priceAtTime.toFixed(2)}
+                          </p>
+                        </div>
                       </div>
+
+                      {/* Right side: subtotal */}
                       <p className="font-semibold">
                         &#8373;{(product.priceAtTime * product.quantity).toFixed(2)}
                       </p>
                     </div>
+
                     {index < products.length - 1 && <Separator className="mt-4" />}
                   </div>
                 ))}

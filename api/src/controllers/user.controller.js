@@ -70,6 +70,12 @@ export const getUserOrders = async (req, res) => {
             limit,
             offset,
             order: [["createdAt", "DESC"]],
+            include: [
+                {
+                    model: Shop,
+                    attributes: ["id", "name"],
+                },
+            ],
         });
 
         if (!orders) {
@@ -79,6 +85,8 @@ export const getUserOrders = async (req, res) => {
         };
         
         const totalPages = Math.ceil(count / limit);
+
+        console.log(orders);
         return res.status(200).json({
         orders,
         pagination: {
@@ -104,7 +112,7 @@ export const getOneUserOrder = async (req, res) => {
         if (!order){ return res.status(404).json({ message: "Order doesn't exist" }) }
 
         const orderProducts = await order.getProducts({
-            attributes: ['id', 'name', 'category'],
+            attributes: ['id', 'name', 'category', 'images'],
             through: {
                 attributes: ['quantity', 'priceAtTime']
             }
@@ -116,7 +124,8 @@ export const getOneUserOrder = async (req, res) => {
                 name: product.name,
                 category: product.category,
                 quantity: product.OrderItem.quantity,
-                priceAtTime: product.OrderItem.priceAtTime
+                priceAtTime: product.OrderItem.priceAtTime,
+                images: product.images
             };
         });
 

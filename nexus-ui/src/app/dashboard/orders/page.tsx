@@ -17,7 +17,10 @@ interface Order {
   total: number;
   createdAt: string;
   updatedAt: string;
-  ShopId: string;
+  Shop: {
+    id: string;
+    name: string;
+  }
   UserId: string;
 }
 
@@ -95,6 +98,7 @@ export default function DashboardOrders() {
       if (!res.ok) throw new Error("Failed to fetch orders");
 
       const data: OrdersResponse = await res.json();
+      console.log(data)
       setOrders(data.orders);
       setPagination(data.pagination);
     } catch (e) {
@@ -337,7 +341,7 @@ export default function DashboardOrders() {
 
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-gray-600">
-                      <p>Shop ID: {order.ShopId}</p>
+                      <p>Shop: {order.Shop.name}</p>
                     </div>
                     <Button variant="outline" size="sm" asChild>
                       <Link href={`/dashboard/orders/${order.id}`}>
