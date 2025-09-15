@@ -8,6 +8,7 @@ import { Package, Calendar, Eye, ShoppingBag, ChevronLeft, ChevronRight } from '
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { getAccessToken } from '@auth0/nextjs-auth0';
+import SalesPerformanceFilter from '@/components/analytics/salesPerformance/SalesPerformanceFilter';
 
 interface Order {
   id: string;
@@ -52,47 +53,57 @@ export default function ShopOrders() {
   const [currentPage, setCurrentPage] = useState(1);
   const [limit] = useState(10); // You can make this adjustable if needed
 
+  const [filterParams, setFilterParams] = useState<{
+    from: Date;
+    to: Date;
+    granularity: string;
+  } | null>(null);
+
   useEffect(() => {
     fetchOrders();
-  }, [currentPage, statusFilter]);
+  }, [currentPage, statusFilter, filterParams]);
 
   const fetchOrders = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      // Build query parameters
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: limit.toString(),
       });
 
-      // Add status filter if not 'all'
-      if (statusFilter !== 'all') {
-        params.append('status', statusFilter);
+      if (statusFilter !== "all") {
+        params.append("status", statusFilter);
       }
 
-      // Get auth token
+      if (filterParams) {
+        params.append("fromDate", filterParams.from.toISOString());
+        params.append("toDate", filterParams.to.toISOString());
+        params.append("granularity", filterParams.granularity);
+      }
+
       const token = await getAccessToken();
-      
-      const response = await fetch(`http://localhost:5000/shops/orders?${params.toString()}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch orders');
-      }
+      const response = await fetch(
+        `http://localhost:5000/shops/orders?${params.toString()}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch orders");
 
       const data: OrdersResponse = await response.json();
       setOrders(data.orders);
       setPagination(data.pagination);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-      setError(error instanceof Error ? error.message : 'Failed to fetch orders');
+    } catch (err) {
+      console.error("Error fetching orders:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch orders");
       setOrders([]);
     } finally {
       setIsLoading(false);
@@ -101,22 +112,21 @@ export default function ShopOrders() {
 
   const handleStatusFilterChange = (value: string) => {
     setStatusFilter(value);
-    setCurrentPage(1); // Reset to first page when filter changes
+    setCurrentPage(1);
   };
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -260,6 +270,7 @@ export default function ShopOrders() {
           <div className="text-sm text-gray-600">
             {pagination.totalOrders} orders found
           </div>
+          <SalesPerformanceFilter onFilterChange={setFilterParams} />
         </div>
       </div>
 

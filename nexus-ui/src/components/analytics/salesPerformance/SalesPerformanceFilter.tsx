@@ -62,7 +62,7 @@ const quickFilters = [
   }
 ];
 
-const getGranularityForRange = (from: string, to: string) => {
+const getGranularityForRange = (from: Date, to: Date) => {
     if (!from || !to) return 'daily';
     const days = differenceInDays(to, from);
     if (days <= 31) return 'daily';
