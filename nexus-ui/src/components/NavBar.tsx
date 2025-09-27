@@ -87,7 +87,7 @@ export default function Navbar() {
 
                 {/* Navigation links in dropdown */}
                 <DropdownMenuItem asChild>
-                  <Link href="/dashboard" className="cursor-pointer">
+                  <Link href="/dashboard/orders" className="cursor-pointer">
                     Dashboard
                   </Link>
                 </DropdownMenuItem>

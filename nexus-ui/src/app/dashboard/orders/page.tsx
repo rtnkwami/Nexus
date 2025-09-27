@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Package, Calendar, Eye, ShoppingBag, ChevronLeft, ChevronRight, DollarSign } from "lucide-react";
+import SalesPerformanceFilter from "@/components/analytics/salesPerformance/SalesPerformanceFilter";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getAccessToken } from "@auth0/nextjs-auth0";
+import { set } from "date-fns";
 
 type OrderStatus = "pending" | "completed" | "cancelled";
 
@@ -46,7 +48,6 @@ export default function DashboardOrders() {
     hasNextPage: false,
     hasPreviousPage: false,
   });
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Filters
@@ -54,14 +55,19 @@ export default function DashboardOrders() {
   const [currentPage, setCurrentPage] = useState(1);
   const [limit] = useState(10); // adjust if you want
 
+  const [filterParams, setFilterParams] = useState<{
+    from: Date;
+    to: Date;
+    granularity: string;
+  } | null>(null);
+
   useEffect(() => {
     fetchOrders();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, statusFilter]);
+  }, [currentPage, statusFilter, filterParams]);
 
   const fetchOrders = async () => {
     try {
-      setIsLoading(true);
       setError(null);
 
       const params = new URLSearchParams({
@@ -69,6 +75,12 @@ export default function DashboardOrders() {
         limit: String(limit),
       });
       if (statusFilter !== "all") params.append("status", statusFilter);
+
+      if (filterParams) {
+        params.append("fromDate", filterParams.from.toISOString());
+        params.append("toDate", filterParams.to.toISOString());
+        params.append("granularity", filterParams.granularity);
+      }
 
       const token = await getAccessToken();
 
@@ -91,7 +103,6 @@ export default function DashboardOrders() {
           hasNextPage: false,
           hasPreviousPage: currentPage > 1,
         });
-        setIsLoading(false);
         return;
       }
 
@@ -105,8 +116,6 @@ export default function DashboardOrders() {
       console.error(e);
       setError(e instanceof Error ? e.message : "Failed to fetch orders");
       setOrders([]);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -204,15 +213,6 @@ export default function DashboardOrders() {
     );
   };
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto py-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-gray-500">Loading your orders...</div>
-        </div>
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -260,6 +260,7 @@ export default function DashboardOrders() {
           </div>
 
           <div className="text-sm text-gray-600">{pagination.totalOrders} orders found</div>
+          <SalesPerformanceFilter onFilterChange={setFilterParams} />
         </div>
       </div>
 

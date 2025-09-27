@@ -4,6 +4,8 @@ import Product from '../models/Product.js';
 import { sequelize } from '../models/index.js';
 import session from 'express-session';
 import Order from '../models/Order.js';
+import { getLineGraphDateRange } from '../utils/getDateRange.js';
+import { Op } from 'sequelize';
 
 export const getUserMetadata = async (req, res) => {
     const { sub, name } = req.body.user;
@@ -51,19 +53,25 @@ export const getUserOrders = async (req, res) => {
         const { sub } = req.auth.payload;
         const user = await User.findOne({where: { auth0_uid: sub } });
         if (!user) { return res.status(404).json({ message: "User not found" }) };
+
         
         const { status } = req.query;
+        const fromDate = req.query.fromDate
+        const toDate = req.query.toDate
         
         if (status) {
             whereClause.status = status;
         }
 
+        if (fromDate && toDate) {
+            const { startDate, endDate } = getLineGraphDateRange(fromDate, toDate);
+
+            whereClause.createdAt = {
+                [Op.between]: [startDate, endDate]
+            }
+        }
+
         const count = await user.countOrders({ where: whereClause });
-        if (count === 0) {
-            return res.status(404).json({
-                message: "No orders have been placed."
-            })
-        };
         
         const orders = await user.getOrders({
             where: whereClause,
@@ -77,25 +85,19 @@ export const getUserOrders = async (req, res) => {
                 },
             ],
         });
-
-        if (!orders) {
-            return res.status(404).json({
-                message: "No orders have been placed."
-            })
-        };
         
         const totalPages = Math.ceil(count / limit);
 
         console.log(orders);
         return res.status(200).json({
-        orders,
-        pagination: {
-            currentPage: page,
-            totalPages,
-            totalOrders: count,
-            hasNextPage: page < totalPages,
-            hasPreviousPage: page > 1,
-        },
+            orders,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalOrders: count,
+                hasNextPage: page < totalPages,
+                hasPreviousPage: page > 1,
+            },
         });
 
     } catch (error) {
