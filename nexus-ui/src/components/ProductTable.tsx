@@ -72,7 +72,12 @@ export default function ProductTable({ products, onEdit, onDelete }: Props) {
                 <td className="px-4 py-3">
                   <Badge variant={status.variant}>{status.label}</Badge>
                 </td>
-                <td className="px-4 py-3 text-right">${product.price.toFixed(2)}</td>
+                <td className="px-4 py-3 text-right">{Number(product.price).toLocaleString("en-GH", {
+              style: "currency",
+              currency: "GHS",
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}</td>
                 <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

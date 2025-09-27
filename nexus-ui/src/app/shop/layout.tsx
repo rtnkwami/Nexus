@@ -89,7 +89,6 @@ export default function ShopLayout({ children }: { children: ReactNode }) {
               pathPrefix="/shop/analytics"
               pathname={pathname}
               isCollapsed={isCollapsed}
-              // ## CHANGE 1: Pass the `toggleCollapse` function down ##
               onCollapseClick={toggleCollapse}
             >
               <NavLink 
@@ -216,7 +215,7 @@ function NavSection({
   pathPrefix,
   children,
   pathname,
-  onCollapseClick, // Added prop
+  onCollapseClick,
 }: {
   title: string
   icon: any
@@ -224,7 +223,7 @@ function NavSection({
   isCollapsed?: boolean
   children: ReactNode
   pathname: string
-  onCollapseClick?: () => void // Added prop type
+  onCollapseClick?: () => void
 }) {
   const isActive = pathname.startsWith(pathPrefix)
   const [isOpen, setIsOpen] = useState(isActive)
@@ -233,7 +232,6 @@ function NavSection({
     <div>
       <button
         type="button"
-        // ## CHANGE 2: Updated onClick logic ##
         onClick={() => {
           if (isCollapsed) {
             // If the sidebar is collapsed, call the function to expand it.

@@ -5,6 +5,7 @@ import Order from "../models/Order.js";
 import { removeUndefined } from "../utils/cleanInputs.js";
 import { fn, col, where, Op } from "sequelize";
 import { getUserShopId } from "../utils/getUserShop.js";
+import { getLineGraphDateRange } from "../utils/getDateRange.js";
 
 export const updateShopMetadata =  async (req, res) => {
     const { name, description } = req.body.shop;
@@ -220,10 +221,21 @@ export const getShopOrders = async (req, res) => {
         const shopId = await getUserShopId(req);
         const { status } = req.query;
 
+        const fromDate = req.query.fromDate
+        const toDate = req.query.toDate
+
         const whereClause = { ShopId: shopId };
         
         if (status) {
             whereClause.status = status;
+        }
+
+        if (fromDate && toDate) {
+            const { startDate, endDate } = getLineGraphDateRange(fromDate, toDate);
+
+            whereClause.createdAt = {
+                [Op.between]: [startDate, endDate]
+            }
         }
 
         const { count, rows } = await Order.findAndCountAll({ 
@@ -238,10 +250,6 @@ export const getShopOrders = async (req, res) => {
             limit,
             order: [['updatedAt', 'DESC']]
         });
-
-        if (count === 0) { 
-            return res.status(404).json({ message: "No orders have been placed." }); 
-        }
 
         return res.status(200).json({
             orders: rows,

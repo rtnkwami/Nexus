@@ -2,12 +2,14 @@ import ProductList from "@/components/ProductList";
 import { Product } from "@/types";
 import PopularProductsCarousel from "@/components/PopularProductsCarousel";
 
+// Determine a color for a category based on its name
 const hueFromString = (s: string) => {
   let h = 0;
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
   return h % 360;
 };
 
+// Accent style for category labels
 const accentStyle = (category: string): React.CSSProperties => ({
   backgroundColor: `hsl(${hueFromString(category)} 85% 45%)`,
 });
