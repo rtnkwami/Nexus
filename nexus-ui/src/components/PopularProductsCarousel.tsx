@@ -42,7 +42,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isCenter }) => {
             <h3 className="font-semibold text-lg mb-2 line-clamp-1">{product.name}</h3>
             <p className="text-gray-600 text-sm mb-3 line-clamp-2">{product.description}</p>
             <div className="flex items-center justify-between">
-            <span className="text-2xl font-bold">${product.price}</span>
+            <span className="text-2xl font-bold">{Number(product.price).toLocaleString("en-GH", {
+              style: "currency",
+              currency: "GHS",
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}</span>
             <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
                 {product.category}
             </span>

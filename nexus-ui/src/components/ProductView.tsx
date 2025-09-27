@@ -97,7 +97,12 @@ const ProductView = ({ productId }: { productId: string }) => {
       <div className="space-y-6">
         <p className="text-sm">{product.category}</p>
         <h1 className="text-3xl font-semibold">{product.name}</h1>
-        <p className="text-2xl font-bold text-gray-800">&#8373;{product.price.toFixed(2)}</p>
+        <p className="text-2xl font-bold text-gray-800">{Number(product.price).toLocaleString("en-GH", {
+              style: "currency",
+              currency: "GHS",
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}</p>
         <p className="text-gray-700">{product.description}</p>
 
         <div className="flex items-center space-x-4 mt-4">
@@ -122,7 +127,7 @@ const ProductView = ({ productId }: { productId: string }) => {
           {product.stock > 0 ? `In stock: ${product.stock}` : 'Out of stock'}
         </p>
 
-        <div className="mt-6 border-t pt-4">
+        {/* <div className="mt-6 border-t pt-4">
           <p className="text-gray-700 font-medium">Guaranteed Safe Checkout</p>
           <div className="flex space-x-4 mt-2">
             <img src="/visa.svg" alt="Visa" className="h-6" />
@@ -130,7 +135,7 @@ const ProductView = ({ productId }: { productId: string }) => {
             <img src="/amex.svg" alt="Amex" className="h-6" />
             <img src="/discover.svg" alt="Discover" className="h-6" />
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

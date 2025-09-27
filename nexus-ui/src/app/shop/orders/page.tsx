@@ -45,7 +45,6 @@ export default function ShopOrders() {
     hasNextPage: false,
     hasPreviousPage: false
   });
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
   // Filter states
@@ -65,7 +64,6 @@ export default function ShopOrders() {
 
   const fetchOrders = async () => {
     try {
-      setIsLoading(true);
       setError(null);
 
       const params = new URLSearchParams({
@@ -105,8 +103,6 @@ export default function ShopOrders() {
       console.error("Error fetching orders:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch orders");
       setOrders([]);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -208,15 +204,6 @@ export default function ShopOrders() {
     );
   };
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto py-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-gray-500">Loading your orders...</div>
-        </div>
-      </div>
-    );
-  }
 
   if (error) {
     return (

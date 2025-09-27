@@ -24,7 +24,12 @@ export default function TotalRevenueCard({ revenue, percentageChange, trend, per
         <p className="text-sm text-muted-foreground">Total Revenue</p>
 
         <div className="text-2xl font-bold tracking-tight">
-          &#8373;{Number(revenue).toLocaleString(undefined, { minimumFractionDigits: 0 })}
+          {Number(revenue).toLocaleString("en-GH", {
+              style: "currency",
+              currency: "GHS",
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
         </div>
 
         <div className="flex items-center space-x-2">

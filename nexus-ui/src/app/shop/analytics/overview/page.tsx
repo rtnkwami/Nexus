@@ -154,7 +154,7 @@ export default function AnalyticsOverviewPage() {
     }
   };
 
-  const displayInsights = insights || (insightsError ? mockInsights : null);
+  const displayInsights = insights || (insightsError ? null : null);
 
   if (loading) {
     return (

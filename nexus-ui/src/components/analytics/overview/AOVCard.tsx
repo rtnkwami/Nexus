@@ -24,7 +24,12 @@ export default function AOVCard({ aov, percentageChange, trend, periodLabel }) {
         <p className="text-sm text-muted-foreground">Average Order Value</p>
 
         <div className="text-2xl font-bold tracking-tight">
-          &#8373;{Number(aov).toLocaleString(undefined, { minimumFractionDigits: 0 })}
+          {Number(aov).toLocaleString("en-GH", {
+              style: "currency",
+              currency: "GHS",
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
         </div>
 
         <div className="flex items-center space-x-2">

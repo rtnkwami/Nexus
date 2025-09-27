@@ -52,16 +52,19 @@ export function ProductsPerformanceTable({ productsData, title = "Product Perfor
                       <span className="font-medium text-gray-900 truncate">{product.name}</span>
                     </div>
                   </td>
-                  <td className="text-right py-3 px-2 font-mono text-gray-700">
-                    <span className="text-xs align-top">&#8373;</span>
-                    {parseFloat(product.totalRevenue || 0).toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2
-                    })}
+                  <td className="text-right py-3 px-2 text-sm tabular-nums text-gray-700">
+                      {Number(product.totalRevenue ?? 0).toLocaleString("en-GH", {
+                        style: "currency",
+                        currency: "GHS",
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
                   </td>
-                  <td className="text-right py-3 px-2 font-mono text-gray-700">
-                    {parseInt(product.appearances || 0)}
+
+                  <td className="text-right py-3 px-2 text-sm tabular-nums text-gray-700">
+                      {Number.parseInt(product.appearances ?? 0, 10)}
                   </td>
+
                   <td className="text-right py-3 px-2">
                     <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
                       {(parseFloat(product.orderFrequency || 0) * 100).toFixed(1)}%

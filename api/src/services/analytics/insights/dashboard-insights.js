@@ -190,7 +190,7 @@ export async function getProductAnalyticsInsights(productData) {
     `;
 
     const response = await ai.models.generateContent({
-        model: "gemini-2.5-pro",  
+        model: "gemini-2.5-flash",  
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         config: {
             responseMimeType: "application/json",
